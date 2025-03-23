@@ -6,7 +6,9 @@
 //
 
 import UIKit
-
+import IQKeyboardManagerSwift // 导入IQKeyboardManager
+import RxSwift
+import SnapKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
@@ -16,7 +18,37 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
         // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        guard let _ = (scene as? UIWindowScene) else { return }
+//        guard let _ = (scene as? UIWindowScene) else { return }
+        
+        guard let windowScene = (scene as? UIWindowScene) else { return }
+        IQKeyboardManager.shared.isEnabled = true
+        IQKeyboardManager.shared.enableAutoToolbar = true // 自定义工具条的完成按钮文本
+        DatabaseManager.shared
+        
+        window = UIWindow(windowScene: windowScene)
+//        let homeVc = MainTabBarController()
+//        let homeNav = BaseNavigationController(rootViewController: homeVc)
+        window?.rootViewController = MainTabBarController()
+
+
+        
+        // iOS15之后导航条背景透明问题
+        if #available(iOS 15, *) {
+            UITableView.appearance().sectionHeaderTopPadding = 0
+            
+            let barApp = UINavigationBarAppearance()
+            barApp.configureWithOpaqueBackground()
+            barApp.backgroundColor = .white
+            barApp.shadowColor = .clear
+            UINavigationBar.appearance().standardAppearance = barApp
+            UINavigationBar.appearance().scrollEdgeAppearance = barApp
+        } else {
+            UINavigationBar.appearance().shadowImage = UIImage()
+            UINavigationBar.appearance().barTintColor = UIColor.white
+            UINavigationBar.appearance().backgroundColor = UIColor.white
+        }
+       
+        window?.makeKeyAndVisible()
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
