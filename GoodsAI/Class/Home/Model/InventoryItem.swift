@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import CloudKit
 import UIKit
 
 struct InventoryItem: Identifiable, Codable {
@@ -16,8 +15,6 @@ struct InventoryItem: Identifiable, Codable {
     var productPrice: Double
     var imageData: Data?
     var embedding: [Float]? // Vector embedding for the image
-    var recordID: CKRecord.ID? // CloudKit record ID (for backward compatibility)
-  
     var quantityInStock: Int // quantity in stock
     
     // Properties not stored directly
@@ -26,22 +23,20 @@ struct InventoryItem: Identifiable, Codable {
     
     // CodingKeys to exclude non-Codable properties
     enum CodingKeys: String, CodingKey {
-        case id, barcode, productName, productPrice, imageData, embedding, recordID, quantityInStock
+        case id, barcode, productName, productPrice, imageData, embedding, quantityInStock
     }
     
-    init(barcode: String, productName: String, productPrice: Double, imageData: Data?, recordID: CKRecord.ID? = nil, embedding: [Float]? = nil, quantityInStock: Int, thumbImage: UIImage?) {
+    init(barcode: String, productName: String, productPrice: Double, imageData: Data?, embedding: [Float]? = nil, quantityInStock: Int, thumbImage: UIImage?) {
         self.id = barcode
         self.barcode = barcode
         self.productName = productName
         self.productPrice = productPrice
         self.imageData = imageData
         self.embedding = embedding
-        self.recordID = recordID
         self.quantityInStock = quantityInStock
         self.thumbImage = thumbImage
     }
     
-    // Custom encoding for CKRecord.ID which isn't Codable
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         
@@ -52,11 +47,8 @@ struct InventoryItem: Identifiable, Codable {
         try container.encode(imageData, forKey: .imageData)
         try container.encode(embedding, forKey: .embedding)
         try container.encode(quantityInStock, forKey: .quantityInStock)
-        
-        // Skip encoding recordID since it's not needed for local storage
     }
     
-    // Custom decoding for CKRecord.ID which isn't Codable
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
@@ -67,9 +59,6 @@ struct InventoryItem: Identifiable, Codable {
         imageData = try container.decodeIfPresent(Data.self, forKey: .imageData)
         embedding = try container.decodeIfPresent([Float].self, forKey: .embedding)
         quantityInStock = try container.decode(Int.self, forKey: .quantityInStock)
-        
-        // recordID is nil when decoded from local storage
-        recordID = nil
         
         // Set thumbImage from imageData if available
         if let imageData = imageData {

@@ -823,7 +823,6 @@ class DatabaseManager {
             productName: productName,
             productPrice: productPrice,
             imageData: imageData,
-            recordID: nil,
             embedding: nil,
             quantityInStock: quantityInStock,
             thumbImage: thumbImage

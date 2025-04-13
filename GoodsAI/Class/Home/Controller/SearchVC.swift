@@ -9,7 +9,6 @@ import UIKit
 import RxSwift
 import AVFAudio
 import Speech
-import CloudKit
 
 class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
     

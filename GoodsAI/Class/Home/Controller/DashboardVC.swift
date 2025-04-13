@@ -8,7 +8,6 @@
 import UIKit
 import RxSwift
 import MobileCoreServices
-import CloudKit
 
 class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
 
@@ -65,7 +64,7 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
                     thumbImage: image
                 )
                 
-                // Save to CloudKit
+                // Save to local storage
                 self.saveNewItem(newItem)
             }
             
@@ -377,7 +376,6 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
                 productName: name,
                 productPrice: price,
                 imageData: item.imageData,
-                recordID: item.recordID,
                 quantityInStock: quantity,
                 thumbImage: item.thumbImage
             )
@@ -389,12 +387,8 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
                 self.tableView.reloadData()
             }
             
-            // Only update in CloudKit if the item has a recordID
-            if let _ = item.recordID {
-                self.updateItemInCloudKit(updatedItem)
-            } else {
-                ProgressTools.showSuccess("Item updated locally")
-            }
+            // Update in database
+            self.updateItemLocally(updatedItem)
         }
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
@@ -479,7 +473,6 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
                 productName: item.productName,
                 productPrice: item.productPrice,
                 imageData: item.imageData,
-                recordID: item.recordID,
                 quantityInStock: updatedQuantity,
                 thumbImage: item.thumbImage
             )
@@ -491,22 +484,8 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
                 self.tableView.reloadRows(at: [indexPath], with: .automatic)
             }
             
-            // Update in CloudKit
-            if let _ = item.recordID {
-                self.updateItemInCloudKit(updatedItem)
-            } else {
-                // Use DatabaseManager for local update too - ensure persistence
-                DatabaseManager.shared.updateItem(item: updatedItem) { result in
-                    DispatchQueue.main.async {
-                        switch result {
-                        case .success(_):
-                            ProgressTools.showSuccess("Quantity updated locally")
-                        case .failure(let error):
-                            ProgressTools.showError("Failed to update item: \(error.localizedDescription)")
-                        }
-                    }
-                }
-            }
+            // Update in database
+            self.updateItemLocally(updatedItem)
             
             completionHandler(true)
         }
@@ -522,7 +501,6 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
                 productName: item.productName,
                 productPrice: item.productPrice,
                 imageData: item.imageData,
-                recordID: item.recordID,
                 quantityInStock: updatedQuantity,
                 thumbImage: item.thumbImage
             )
@@ -534,22 +512,8 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
                 self.tableView.reloadRows(at: [indexPath], with: .automatic)
             }
             
-            // Update in CloudKit
-            if let _ = item.recordID {
-                self.updateItemInCloudKit(updatedItem)
-            } else {
-                // Use DatabaseManager for local update too - ensure persistence
-                DatabaseManager.shared.updateItem(item: updatedItem) { result in
-                    DispatchQueue.main.async {
-                        switch result {
-                        case .success(_):
-                            ProgressTools.showSuccess("Quantity updated locally")
-                        case .failure(let error):
-                            ProgressTools.showError("Failed to update item: \(error.localizedDescription)")
-                        }
-                    }
-                }
-            }
+            // Update in database
+            self.updateItemLocally(updatedItem)
             
             completionHandler(true)
         }
@@ -566,9 +530,9 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
         return configuration
     }
     
-    // MARK: - CloudKit Operations
+    // MARK: - Local Database Operations
     
-    func updateItemInCloudKit(_ item: InventoryItem) {
+    func updateItemLocally(_ item: InventoryItem) {
         ProgressTools.showLoading("Updating item...", self.view)
         
         DatabaseManager.shared.updateItem(item: item) { result in

@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import CloudKit
 
 // File upload result structure
 struct UploadResult {
@@ -16,14 +15,14 @@ struct UploadResult {
 }
 
 // Callback type aliases
-typealias SingleUploadCallback = ((Result<CKRecord, Error>)) -> Void
-typealias AllCompleteCallback = ([(Result<CKRecord, Error>)]) -> Void
+typealias SingleUploadCallback = ((Result<InventoryItem, Error>)) -> Void
+typealias AllCompleteCallback = ([(Result<InventoryItem, Error>)]) -> Void
 
 class FileUploadManager {
     // Serial queue to ensure thread safety
     private let queue = DispatchQueue(label: "com.upload.manager")
     private var currentTasks: [InventoryItem] = []
-    private var results: [(Result<CKRecord, Error>)] = []
+    private var results: [(Result<InventoryItem, Error>)] = []
     
     /// Batch upload entry method
     func uploadFiles(_ items: [InventoryItem],
@@ -52,10 +51,10 @@ class FileUploadManager {
                 return
             }
             
-            let fileURL = self.currentTasks[index]
+            let item = self.currentTasks[index]
             
-            // Simulate asynchronous upload operation (replace with real upload logic)
-            self.mockUploadFile(fileURL) { result in
+            // Use DatabaseManager to save the item
+            self.saveToLocalStorage(item) { result in
                 // Record results
                 self.results.append(result)
                 
@@ -70,15 +69,12 @@ class FileUploadManager {
         }
     }
     
-    // MARK: - Mock upload implementation (replace with real network request)
-    private func mockUploadFile(_ inventoryItem: InventoryItem,
-                               completion: @escaping (Result<CKRecord, Error>) -> Void) {
+    private func saveToLocalStorage(_ inventoryItem: InventoryItem,
+                               completion: @escaping (Result<InventoryItem, Error>) -> Void) {
         
-        CloudKitManager.shared.saveNote(note: inventoryItem,completion: {
-            result in
+        DatabaseManager.shared.saveItem(item: inventoryItem) { result in
             completion(result)
-        })
-
+        }
     }
 }
 
