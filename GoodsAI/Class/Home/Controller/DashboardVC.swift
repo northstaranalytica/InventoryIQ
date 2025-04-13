@@ -8,6 +8,7 @@
 import UIKit
 import RxSwift
 import MobileCoreServices
+import Speech
 
 class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
 
@@ -18,6 +19,44 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
     var searchText: String = ""
     var sortOption = SortOption.nameAsc
     
+    private lazy var voiceToTextTools: VoiceToTextTools = {
+        let voiceToText = VoiceToTextTools()
+        voiceToText.blockInputText = { [weak self] text in
+            guard let self = self else { return }
+            
+            // Execute UI updates on the main thread
+            DispatchQueue.main.async {
+                print("=== DashboardVC: Received voice input: \"\(text)\" ===")
+                
+                // The current textfield being edited will be set when voice input starts
+                if let activeTextField = self.activeTextField {
+                    print("=== DashboardVC: Setting text on active text field: \(String(describing: activeTextField.placeholder)) ===")
+                    
+                    // Set the text directly and also trigger valueChanged notification
+                    activeTextField.text = text
+                    
+                    // Notify that the text has changed - UIAlertController may not detect direct setting
+                    NotificationCenter.default.post(name: UITextField.textDidChangeNotification, object: activeTextField)
+                    
+                    print("=== DashboardVC: Text set and notification posted ===")
+                } else {
+                    print("=== DashboardVC: No active text field found ===")
+                }
+            }
+        }
+        
+        voiceToText.blockError = { errorMessage in
+            DispatchQueue.main.async {
+                print("=== DashboardVC: Voice error: \(errorMessage) ===")
+                ProgressTools.showError(errorMessage)
+            }
+        }
+        return voiceToText
+    }()
+    
+    // Track which textfield is being edited with voice
+    private var activeTextField: UITextField?
+    
     private lazy var choicePhotoTools: ChoicePhotoTools = {
         let object = ChoicePhotoTools()
         object.blockComplete = { [weak self] image in
@@ -26,31 +65,87 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
             // Create and present the add item form
             let addItemVC = UIAlertController(title: "Add New Item", message: "Enter item details", preferredStyle: .alert)
             
+            // Product Name field with voice input
             addItemVC.addTextField { textField in
                 textField.placeholder = "Product Name"
             }
             
+            // Price field with voice input
             addItemVC.addTextField { textField in
                 textField.placeholder = "Price"
                 textField.keyboardType = .decimalPad
             }
             
+            // Quantity field with voice input
             addItemVC.addTextField { textField in
                 textField.placeholder = "Quantity"
                 textField.keyboardType = .numberPad
             }
             
-            let addAction = UIAlertAction(title: "Add", style: .default) { [weak self] _ in
+            // Add voice input buttons action
+            let addVoiceButtons = { [weak self] (alertController: UIAlertController) in
                 guard let self = self,
-                      let nameField = addItemVC.textFields?[0],
+                      let nameField = alertController.textFields?[0],
+                      let priceField = alertController.textFields?[1],
+                      let quantityField = alertController.textFields?[2] else { return }
+                
+                // Create and add voice input buttons for each field
+                let addVoiceButton = { (textField: UITextField, buttonTitle: String) in
+                    let voiceButton = UIButton(type: .system)
+                    voiceButton.setImage(UIImage(systemName: "mic.fill"), for: .normal)
+                    voiceButton.tintColor = .systemBlue
+                    voiceButton.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
+                    voiceButton.tag = textField.hash
+                    
+                    // Add press-and-hold gesture instead of tap
+                    voiceButton.addTarget(self, action: #selector(self.voiceButtonPressed(_:)), for: .touchDown)
+                    voiceButton.addTarget(self, action: #selector(self.voiceButtonReleased(_:)), for: [.touchUpInside, .touchUpOutside, .touchCancel])
+                    
+                    textField.rightView = voiceButton
+                    textField.rightViewMode = .always
+                }
+                
+                addVoiceButton(nameField, "Name")
+                addVoiceButton(priceField, "Price")
+                addVoiceButton(quantityField, "Quantity")
+            }
+            
+            // Add voice buttons after alert is presented (need to wait for text fields to be created)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                addVoiceButtons(addItemVC)
+            }
+            
+            let addAction = UIAlertAction(title: "Add", style: .default) { [weak self] _ in
+                guard let self = self else { return }
+                
+                // Get text fields
+                guard let nameField = addItemVC.textFields?[0],
                       let priceField = addItemVC.textFields?[1],
-                      let quantityField = addItemVC.textFields?[2],
-                      let name = nameField.text, !name.isEmpty,
-                      let priceText = priceField.text, !priceText.isEmpty,
-                      let price = Double(priceText),
-                      let quantityText = quantityField.text, !quantityText.isEmpty,
-                      let quantity = Int(quantityText) else {
-                    ProgressTools.showError("Please fill all fields with valid data")
+                      let quantityField = addItemVC.textFields?[2] else {
+                    ProgressTools.showError("Could not access input fields")
+                    return
+                }
+                
+                // Get values with proper logging
+                let name = nameField.text ?? ""
+                let priceText = priceField.text ?? ""
+                let quantityText = quantityField.text ?? ""
+                
+                print("Adding item - Name: '\(name)', Price: '\(priceText)', Quantity: '\(quantityText)'")
+                
+                // Validate input
+                if name.isEmpty {
+                    ProgressTools.showError("Product name cannot be empty")
+                    return
+                }
+                
+                guard let price = Double(priceText) else {
+                    ProgressTools.showError("Invalid price format")
+                    return
+                }
+                
+                guard let quantity = Int(quantityText) else {
+                    ProgressTools.showError("Invalid quantity format")
                     return
                 }
                 
@@ -244,7 +339,7 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
         self.present(alert, animated: true)
     }
     
-    private func updateFilteredInventory() {
+    func updateFilteredInventory() {
         self.filteredInventory = allInventory.filter { item in
             if searchText.isEmpty {
                 return true
@@ -274,6 +369,9 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
     }
     
     @objc func addNewItem() {
+        // Request voice permission when user tries to add a new item
+        voiceToTextTools.requestRecordPermission()
+        
         // Show action sheet for taking photo or choosing from gallery
         let actionSheet = UIAlertController(title: "Add New Item", message: "Take a photo of the item", preferredStyle: .actionSheet)
         
@@ -372,16 +470,68 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
             textField.text = String(item.quantityInStock)
         }
         
+        // Add voice input buttons to edit fields
+        let addVoiceButtons = { [weak self] (alertController: UIAlertController) in
+            guard let self = self,
+                  let nameField = alertController.textFields?[0],
+                  let priceField = alertController.textFields?[1],
+                  let quantityField = alertController.textFields?[2] else { return }
+            
+            // Create and add voice input buttons for each field
+            let addVoiceButton = { (textField: UITextField, buttonTitle: String) in
+                let voiceButton = UIButton(type: .system)
+                voiceButton.setImage(UIImage(systemName: "mic.fill"), for: .normal)
+                voiceButton.tintColor = .systemBlue
+                voiceButton.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
+                voiceButton.tag = textField.hash
+                
+                // Add press-and-hold gesture instead of tap
+                voiceButton.addTarget(self, action: #selector(self.voiceButtonPressed(_:)), for: .touchDown)
+                voiceButton.addTarget(self, action: #selector(self.voiceButtonReleased(_:)), for: [.touchUpInside, .touchUpOutside, .touchCancel])
+                
+                textField.rightView = voiceButton
+                textField.rightViewMode = .always
+            }
+            
+            addVoiceButton(nameField, "Name")
+            addVoiceButton(priceField, "Price")
+            addVoiceButton(quantityField, "Quantity")
+        }
+        
+        // Add voice buttons after alert is presented
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            addVoiceButtons(editItemVC)
+        }
+        
         let saveAction = UIAlertAction(title: "Save", style: .default) { [self] _ in
+            // Get text fields
             guard let nameField = editItemVC.textFields?[0],
                   let priceField = editItemVC.textFields?[1],
-                  let quantityField = editItemVC.textFields?[2],
-                  let name = nameField.text, !name.isEmpty,
-                  let priceText = priceField.text, !priceText.isEmpty,
-                  let price = Double(priceText),
-                  let quantityText = quantityField.text, !quantityText.isEmpty,
-                  let quantity = Int(quantityText) else {
-                ProgressTools.showError("Please fill all fields with valid data")
+                  let quantityField = editItemVC.textFields?[2] else {
+                ProgressTools.showError("Could not access input fields")
+                return
+            }
+            
+            // Get values with proper logging
+            let name = nameField.text ?? ""
+            let priceText = priceField.text ?? ""
+            let quantityText = quantityField.text ?? ""
+            
+            print("Updating item - Name: '\(name)', Price: '\(priceText)', Quantity: '\(quantityText)'")
+            
+            // Validate input
+            if name.isEmpty {
+                ProgressTools.showError("Product name cannot be empty")
+                return
+            }
+            
+            guard let price = Double(priceText) else {
+                ProgressTools.showError("Invalid price format")
+                return
+            }
+            
+            guard let quantity = Int(quantityText) else {
+                ProgressTools.showError("Invalid quantity format")
                 return
             }
             
@@ -581,6 +731,89 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
                 } else {
                     ProgressTools.showError("Failed to delete item")
                 }
+            }
+        }
+    }
+    
+    // Voice button press-and-hold implementation
+    @objc func voiceButtonPressed(_ sender: UIButton) {
+        print("=== Voice Button Pressed ===")
+        
+        // Provide haptic feedback
+        let feedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
+        feedbackGenerator.prepare()
+        feedbackGenerator.impactOccurred()
+        
+        // Determine which text field to update based on the button's tag
+        if let alertController = self.presentedViewController as? UIAlertController,
+           let textFields = alertController.textFields {
+            for textField in textFields {
+                if textField.hash == sender.tag {
+                    self.activeTextField = textField
+                    print("=== Active TextField Set: \(String(describing: textField.placeholder)) ===")
+                    
+                    // Change button appearance to indicate recording
+                    UIView.animate(withDuration: 0.2) {
+                        sender.tintColor = .systemRed
+                        sender.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
+                    }
+                    
+                    // Start voice recognition immediately
+                    print("=== Starting Voice Recognition ===")
+                    self.voiceToTextTools.startLiveTranscribe()
+                    
+                    // Show recording indicator
+                    ProgressTools.showLoading("Listening... (Release when done)", self.view)
+                    break
+                }
+            }
+        } else {
+            print("=== Alert controller or text fields not found ===")
+        }
+    }
+    
+    @objc func voiceButtonReleased(_ sender: UIButton) {
+        print("=== Voice Button Released ===")
+        
+        // Provide haptic feedback
+        let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
+        feedbackGenerator.impactOccurred()
+        
+        // Stop voice recognition
+        print("=== Stopping Voice Recognition ===")
+        self.voiceToTextTools.stopLiveTranscribe()
+        ProgressTools.hide(self.view)
+        
+        // Extra validation - make sure text is properly set
+        if let text = self.activeTextField?.text, !text.isEmpty {
+            print("=== Voice input captured: \(text) ===")
+            
+            // Provide success feedback if text was captured
+            let successFeedback = UINotificationFeedbackGenerator()
+            successFeedback.notificationOccurred(.success)
+        } else {
+            print("=== Voice input NOT captured - text field is empty ===")
+            
+            // Provide error feedback if no text was captured
+            let errorFeedback = UINotificationFeedbackGenerator()
+            errorFeedback.notificationOccurred(.error)
+        }
+        
+        // Reset button appearance
+        UIView.animate(withDuration: 0.2) {
+            sender.tintColor = .systemBlue
+            sender.transform = .identity
+        }
+        
+        // Ensure the text field updates are processed
+        if let activeField = self.activeTextField {
+            NotificationCenter.default.post(name: UITextField.textDidChangeNotification, object: activeField)
+            print("=== Posted text change notification ===")
+            
+            // Add a repeat notification after a small delay to ensure UIAlertController refreshes
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                print("=== Posting follow-up text change notification ===")
+                NotificationCenter.default.post(name: UITextField.textDidChangeNotification, object: activeField)
             }
         }
     }

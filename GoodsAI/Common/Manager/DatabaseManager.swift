@@ -28,12 +28,81 @@ class DatabaseManager {
     private let itemsStorageKey = "com.inventoryiq.inventoryItems"
     private let vectorsStorageKey = "com.inventoryiq.imageVectors"
     
+    // Directory for storing images
+    private var imagesDirectory: URL? {
+        return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("InventoryImages")
+    }
+    
     private init() {
+        // Create images directory if it doesn't exist
+        createImagesDirectoryIfNeeded()
+        
         // Load CLIP models
         loadCLIPModels()
         
         // Load stored data
         loadStoredData()
+    }
+    
+    // Create images directory if needed
+    private func createImagesDirectoryIfNeeded() {
+        guard let imagesDirectory = imagesDirectory else { return }
+        
+        if !FileManager.default.fileExists(atPath: imagesDirectory.path) {
+            do {
+                try FileManager.default.createDirectory(at: imagesDirectory, withIntermediateDirectories: true)
+                self.logger.info("Created images directory at \(imagesDirectory.path)")
+            } catch {
+                self.logger.error("Failed to create images directory: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    // Get image URL for a barcode
+    private func imageURL(for barcode: String) -> URL? {
+        return imagesDirectory?.appendingPathComponent("\(barcode).jpg")
+    }
+    
+    // Save image to file system
+    private func saveImageToDisk(imageData: Data, barcode: String) -> Bool {
+        guard let imageURL = imageURL(for: barcode) else {
+            self.logger.error("Failed to get image URL for barcode \(barcode)")
+            return false
+        }
+        
+        do {
+            try imageData.write(to: imageURL)
+            self.logger.info("Saved image for barcode \(barcode) to disk")
+            return true
+        } catch {
+            self.logger.error("Failed to save image for barcode \(barcode): \(error.localizedDescription)")
+            return false
+        }
+    }
+    
+    // Load image from file system
+    private func loadImageFromDisk(barcode: String) -> Data? {
+        guard let imageURL = imageURL(for: barcode) else { return nil }
+        
+        do {
+            let imageData = try Data(contentsOf: imageURL)
+            return imageData
+        } catch {
+            self.logger.error("Failed to load image for barcode \(barcode): \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    // Delete image from file system
+    private func deleteImageFromDisk(barcode: String) {
+        guard let imageURL = imageURL(for: barcode) else { return }
+        
+        do {
+            try FileManager.default.removeItem(at: imageURL)
+            self.logger.info("Deleted image for barcode \(barcode) from disk")
+        } catch {
+            self.logger.error("Failed to delete image for barcode \(barcode): \(error.localizedDescription)")
+        }
     }
     
     // MARK: - Data Persistence
@@ -48,7 +117,16 @@ class DatabaseManager {
                 // Deserialize each item
                 for (barcode, itemData) in serializedItems {
                     do {
-                        let item = try decoder.decode(InventoryItem.self, from: itemData)
+                        var item = try decoder.decode(InventoryItem.self, from: itemData)
+                        
+                        // Load image data from disk instead of from the item itself
+                        if let imageData = loadImageFromDisk(barcode: barcode) {
+                            item.imageData = imageData
+                            
+                            // Create thumbImage from imageData
+                            item.thumbImage = UIImage(data: imageData)
+                        }
+                        
                         self.inventoryItems[barcode] = item
                     } catch {
                         self.logger.error("Failed to decode item with barcode \(barcode): \(error.localizedDescription)")
@@ -80,10 +158,19 @@ class DatabaseManager {
             var serializedItems: [String: Data] = [:]
             
             // Serialize each item
-            for (barcode, item) in self.inventoryItems {
+            for (barcode, var item) in self.inventoryItems {
                 do {
+                    // Don't encode the image data in UserDefaults
+                    // Save a temporary copy with nil imageData for UserDefaults
+                    let imageData = item.imageData
+                    item.imageData = nil
+                    
                     let itemData = try encoder.encode(item)
                     serializedItems[barcode] = itemData
+                    
+                    // Restore the original imageData for use during this session
+                    item.imageData = imageData
+                    self.inventoryItems[barcode] = item
                 } catch {
                     self.logger.error("Failed to encode item with barcode \(barcode): \(error.localizedDescription)")
                 }
@@ -109,8 +196,15 @@ class DatabaseManager {
     func saveItem(item: InventoryItem, completion: @escaping (Result<InventoryItem, Error>) -> Void) {
         var newItem = item
         
-        // Generate embedding for the item's image if available
+        // Save image to disk if available
         if let imageData = item.imageData {
+            // Save the image to the file system
+            let imageSaved = saveImageToDisk(imageData: imageData, barcode: item.barcode)
+            if !imageSaved {
+                self.logger.error("Failed to save image for item \(item.barcode)")
+            }
+            
+            // Generate embedding for the image
             if let embedding = generateCLIPEmbedding(for: imageData) {
                 newItem.embedding = embedding
                 self.imageVectors[item.barcode] = embedding
@@ -133,8 +227,15 @@ class DatabaseManager {
     func updateItem(item: InventoryItem, completion: @escaping (Result<InventoryItem, Error>) -> Void) {
         var updatedItem = item
         
-        // Generate new embedding if the image has changed
+        // Update image on disk if available
         if let imageData = item.imageData {
+            // Save the image to the file system
+            let imageSaved = saveImageToDisk(imageData: imageData, barcode: item.barcode)
+            if !imageSaved {
+                self.logger.error("Failed to save image for item \(item.barcode)")
+            }
+            
+            // Generate new embedding
             if let embedding = generateCLIPEmbedding(for: imageData) {
                 updatedItem.embedding = embedding
                 self.imageVectors[item.barcode] = embedding
@@ -153,6 +254,9 @@ class DatabaseManager {
     }
     
     func deleteItem(barcode: String, completion: @escaping (Bool) -> Void) {
+        // Delete image from disk
+        deleteImageFromDisk(barcode: barcode)
+        
         // Remove from local storage
         self.inventoryItems.removeValue(forKey: barcode)
         self.imageVectors.removeValue(forKey: barcode)

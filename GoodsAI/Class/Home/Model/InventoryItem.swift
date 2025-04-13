@@ -21,9 +21,9 @@ struct InventoryItem: Identifiable, Codable {
     var thumbImage: UIImage? // thumbImage
     var score: Double? // Similarity score for search results
     
-    // CodingKeys to exclude non-Codable properties
+    // CodingKeys to exclude non-Codable properties and exclude imageData (stored on disk)
     enum CodingKeys: String, CodingKey {
-        case id, barcode, productName, productPrice, imageData, embedding, quantityInStock
+        case id, barcode, productName, productPrice, embedding, quantityInStock
     }
     
     init(barcode: String, productName: String, productPrice: Double, imageData: Data?, embedding: [Float]? = nil, quantityInStock: Int, thumbImage: UIImage?) {
@@ -44,9 +44,10 @@ struct InventoryItem: Identifiable, Codable {
         try container.encode(barcode, forKey: .barcode)
         try container.encode(productName, forKey: .productName)
         try container.encode(productPrice, forKey: .productPrice)
-        try container.encode(imageData, forKey: .imageData)
         try container.encode(embedding, forKey: .embedding)
         try container.encode(quantityInStock, forKey: .quantityInStock)
+        
+        // imageData is not encoded - it's saved separately to the file system
     }
     
     init(from decoder: Decoder) throws {
@@ -56,16 +57,12 @@ struct InventoryItem: Identifiable, Codable {
         barcode = try container.decode(String.self, forKey: .barcode)
         productName = try container.decode(String.self, forKey: .productName)
         productPrice = try container.decode(Double.self, forKey: .productPrice)
-        imageData = try container.decodeIfPresent(Data.self, forKey: .imageData)
         embedding = try container.decodeIfPresent([Float].self, forKey: .embedding)
         quantityInStock = try container.decode(Int.self, forKey: .quantityInStock)
         
-        // Set thumbImage from imageData if available
-        if let imageData = imageData {
-            thumbImage = UIImage(data: imageData)
-        } else {
-            thumbImage = nil
-        }
+        // imageData is loaded separately from the file system
+        imageData = nil
+        thumbImage = nil
     }
     
     var image: UIImage? {

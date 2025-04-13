@@ -38,13 +38,15 @@ class VoiceToTextTools {
         // Cancel any previous task
         stopLiveTranscribe()
         
+        print("=== VoiceToTextTools: Starting Transcription ===")
+        
         // Configure audio session
         let audioSession = AVAudioSession.sharedInstance()
         do {
             try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
         } catch {
-            print("Failed to set up audio session: \(error.localizedDescription)")
+            print("=== VoiceToTextTools: Failed to set up audio session: \(error.localizedDescription) ===")
             blockError?("Failed to set up audio recording")
             return
         }
@@ -52,7 +54,7 @@ class VoiceToTextTools {
         // Create English recognizer
         guard let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US")),
               recognizer.isAvailable else {
-            print("English recognizer unavailable")
+            print("=== VoiceToTextTools: English recognizer unavailable ===")
             blockError?("Speech recognition is unavailable")
             return
         }
@@ -63,12 +65,17 @@ class VoiceToTextTools {
         // Configure audio input
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
         guard let recognitionRequest = recognitionRequest else {
-            print("Unable to create recognition request")
+            print("=== VoiceToTextTools: Unable to create recognition request ===")
             blockError?("Failed to initialize speech recognition")
             return
         }
         
         recognitionRequest.shouldReportPartialResults = true
+        
+        // Add task hints to improve recognition
+        if #available(iOS 13, *) {
+            recognitionRequest.taskHint = .dictation
+        }
         
         // Connect to input node
         let inputNode = audioEngine.inputNode
@@ -83,8 +90,9 @@ class VoiceToTextTools {
         
         do {
             try audioEngine.start()
+            print("=== VoiceToTextTools: Audio engine started successfully ===")
         } catch {
-            print("Audio engine failed to start: \(error.localizedDescription)")
+            print("=== VoiceToTextTools: Audio engine failed to start: \(error.localizedDescription) ===")
             blockError?("Failed to start audio recording")
             return
         }
@@ -101,29 +109,45 @@ class VoiceToTextTools {
             if let result = result {
                 let text = result.bestTranscription.formattedString
                 self.currentText = text
-                print("Recognition result: \(text)")
-                self.blockInputText?(text)
+                print("=== VoiceToTextTools: Recognition result: \"\(text)\" ===")
+                
+                // Update UI immediately with partial results while user is holding button
+                // This gives better real-time feedback during recording
+                DispatchQueue.main.async {
+                    self.blockInputText?(text)
+                    print("=== VoiceToTextTools: Called blockInputText with text: \"\(text)\" ===")
+                }
+                
                 isFinal = result.isFinal
+                
+                // If we get a final result, make sure it's processed
+                if isFinal {
+                    print("=== VoiceToTextTools: Received final result from recognition ===")
+                }
             }
             
             if error != nil || isFinal {
-                // Stop recognizing if we get an error or final result
+                // Only handle errors - don't stop on final since we want continuous recognition
                 if let error = error {
-                    print("Recognition error: \(error.localizedDescription)")
+                    print("=== VoiceToTextTools: Recognition error: \(error.localizedDescription) ===")
                     // Only show error to user if we haven't captured any text yet
                     if self.currentText.isEmpty {
-                        self.blockError?("Voice recognition error, please try again")
+                        DispatchQueue.main.async {
+                            self.blockError?("Voice recognition error, please try again")
+                        }
                     }
                 }
-                
-                // Don't stop the audio engine here, let the user explicitly call stop
-                // when they're done speaking
             }
         }
     }
     
     
     func stopLiveTranscribe() {
+        print("=== VoiceToTextTools: Stopping Transcription ===")
+        
+        // Store the final text before stopping
+        let finalText = self.currentText
+        
         // Stop audio engine and remove tap
         audioEngine.stop()
         audioEngine.inputNode.removeTap(onBus: 0)
@@ -137,6 +161,18 @@ class VoiceToTextTools {
         
         // Deactivate audio session
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        
+        print("=== VoiceToTextTools: Transcription Stopped ===")
+        
+        // Always call the input block with the final text immediately
+        // This is crucial for the press-and-hold interaction
+        if !finalText.isEmpty {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                print("=== VoiceToTextTools: Calling blockInputText with final text: \"\(finalText)\" ===")
+                self.blockInputText?(finalText)
+            }
+        }
     }
     
     deinit {
