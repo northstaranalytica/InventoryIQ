@@ -2,7 +2,7 @@
 //  OnboardingViewController.swift
 //  GoodsAI
 //
-//  Created by Claude on 2025/5/1.
+//  Created by Emily on 2025/4/1.
 //
 
 import UIKit
