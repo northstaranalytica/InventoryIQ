@@ -532,15 +532,17 @@ class SearchOptionCell: UITableViewCell {
             make.left.equalTo(iconImageView.snp.right).offset(15)
             make.height.equalTo(40)
             make.bottom.equalToSuperview().offset(-15)
-            make.width.equalTo((UIScreen.main.bounds.width - 130) / 2)
+            // Calculate width dynamically based on available space
+            // Remove the hard-coded width that's causing conflicts
+            make.right.equalTo(secondaryButton.snp.left).offset(-10) // Ensure spacing to secondaryButton
         }
         
         secondaryButton.snp.remakeConstraints { make in
             make.top.equalTo(descriptionLabel.snp.bottom).offset(15)
-            make.left.equalTo(actionButton.snp.right).offset(10)
             make.right.equalToSuperview().offset(-15)
             make.height.equalTo(40)
             make.bottom.equalToSuperview().offset(-15)
+            make.width.equalTo(actionButton.snp.width) // Equal width to actionButton
         }
     }
     

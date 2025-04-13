@@ -46,7 +46,7 @@ class GoodsItemTVCell: UITableViewCell {
         self.imageContentView.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(10)
             make.top.equalToSuperview().offset(12)
-            make.width.height.equalTo(80)
+            make.width.equalTo(60)
             make.bottom.lessThanOrEqualToSuperview().offset(-12)
         }
    
@@ -78,7 +78,6 @@ class GoodsItemTVCell: UITableViewCell {
             make.right.equalToSuperview().offset(-10)
             make.height.equalTo(0.6)
             make.bottom.equalToSuperview().offset(-5)
-            make.top.equalTo(self.imageContentView.snp.bottom).offset(8)
         }
     }
 
