@@ -2,7 +2,7 @@
 //  AudioRecorder.swift
 //  GoodsAI
 //
-//  Created by Steve on 2025/3/20.
+//  Created by Emily on 2025/3/20.
 //
 
 import AVFoundation

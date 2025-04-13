@@ -2,7 +2,7 @@
 //  SearchVC.swift
 //  GoodsAI
 //
-//  Created by Steve on 2025/3/13.
+//  Created by Emily on 2025/3/13.
 //
 
 import UIKit

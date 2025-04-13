@@ -2,7 +2,7 @@
 //  SortOption.swift
 //  GoodsAI
 //
-//  Created by Claude on 2025/3/16.
+//  Created by Emily on 2025/3/16.
 //
 
 import Foundation

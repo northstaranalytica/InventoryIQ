@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  GoodsAI
 //
-//  Created by Steve on 2025/3/10.
+//  Created by Emily on 2025/3/10.
 //
 
 import UIKit

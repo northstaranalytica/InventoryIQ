@@ -2,7 +2,7 @@
 //  UIColor+Centran.swift
 //  GoodsAI
 //
-//  Created by Steve on 2025/3/11.
+//  Created by Emily on 2025/3/11.
 //
 
 import UIKit
