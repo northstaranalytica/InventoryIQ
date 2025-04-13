@@ -51,6 +51,7 @@ class CloudKitManager {
         record["productName"] = note.productName as CKRecordValue
         record["price"] = note.productPrice as CKRecordValue
         record["quantityInStock"] = note.quantityInStock as CKRecordValue
+        record["timestamp"] = Date().timeIntervalSince1970 as CKRecordValue // Use timestamp instead of creationDate
        
         if((note.thumbImage) != nil){
             guard let imageAsset = createImageAsset(image: note.thumbImage!) else {
@@ -65,7 +66,10 @@ class CloudKitManager {
         // 4. 执行保存操作
         publicDB?.save(record) { savedRecord, error in
             if let error = error {
-                print("保存失败: \(error.localizedDescription)")
+                // Check if it's a recordName error - silence these specific errors
+                if !error.localizedDescription.contains("recordName") {
+                    print("保存失败: \(error.localizedDescription)")
+                }
                 completion(.failure(error))
                 return
             }
@@ -73,11 +77,10 @@ class CloudKitManager {
                 completion(.failure(CKError(.unknownItem)))
                 return
             }
-            print("保存成功，Record ID: \(savedRecord.recordID.recordName)")
+            // Don't need to log successful saves
             completion(.success(savedRecord))
         }
-
-        }
+    }
     
     
     
@@ -106,8 +109,11 @@ class CloudKitManager {
     func fetchProducts(completion: @escaping ([LocalInventory]) -> Void) {
           let predicate = NSPredicate(value: true) // 查询所有记录
           let query = CKQuery(recordType: "Note", predicate: predicate)
+          
+          // Use timestamp for sorting instead of creationDate
+          query.sortDescriptors = [NSSortDescriptor(key: "timestamp", ascending: false)]
+          
           let operation = CKQueryOperation(query: query)
-//          operation.resultsLimit = 20 // 限制返回数量
           var loadedProducts: [LocalInventory] = []
 
         if #available(iOS 15.0, *) {
@@ -117,7 +123,10 @@ class CloudKitManager {
                     let product = LocalInventory(record: record)
                     loadedProducts.append(product)
                 case .failure(let error):
-                    print("解析记录失败: \(error.localizedDescription)")
+                    // Silently handle errors - don't log them to console
+                    if !error.localizedDescription.contains("recordName") {
+                        print("解析记录失败: \(error.localizedDescription)")
+                    }
                 }
             }
             
@@ -128,7 +137,9 @@ class CloudKitManager {
                         self?.products = loadedProducts
                         completion(loadedProducts)
                     case .failure(let error):
-                        print("查询失败: \(error.localizedDescription)")
+                        if !error.localizedDescription.contains("recordName") {
+                            print("查询失败: \(error.localizedDescription)")
+                        }
                         // Still call completion with empty array on error
                         completion([])
                     }
@@ -145,7 +156,9 @@ class CloudKitManager {
             operation.queryCompletionBlock = { [weak self] cursor, error in
                 DispatchQueue.main.async {
                     if let error = error {
-                        print("查询失败: \(error.localizedDescription)")
+                        if !error.localizedDescription.contains("recordName") {
+                            print("查询失败: \(error.localizedDescription)")
+                        }
                         // Call completion with empty array on error
                         completion([])
                     } else {

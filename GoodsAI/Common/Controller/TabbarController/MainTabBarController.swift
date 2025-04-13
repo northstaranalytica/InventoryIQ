@@ -14,30 +14,29 @@ class MainTabBarController: UITabBarController {
     }
     
     private func setupTabs() {
-        let homeVC = MyStuffVC()
-        let mineVC = InventoryVC()
+        let dashboardVC = DashboardVC()
+        let searchVC = SearchVC()
         
-        let homeNav = BaseNavigationController(rootViewController: homeVC)
-        let mineNav = BaseNavigationController(rootViewController: mineVC)
+        let dashboardNav = BaseNavigationController(rootViewController: dashboardVC)
+        let searchNav = BaseNavigationController(rootViewController: searchVC)
         
-        var configuration = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular, scale: .default)
-            let image = UIImage(systemName: "house", withConfiguration: configuration)
-            configuration = UIImage.SymbolConfiguration(pointSize: 20, weight: .bold, scale: .default)
-            let selectedImage = UIImage(systemName: "house.fill", withConfiguration: configuration)
-            let homeTabBarItem = UITabBarItem(title: "Stuff", image: image, tag: 0)
-            tabBarItem.selectedImage = selectedImage
+        var dashboardConfig = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular, scale: .default)
+        let dashboardImage = UIImage(systemName: "list.dash", withConfiguration: dashboardConfig)
+        dashboardConfig = UIImage.SymbolConfiguration(pointSize: 20, weight: .bold, scale: .default)
+        let dashboardSelectedImage = UIImage(systemName: "list.dash.fill", withConfiguration: dashboardConfig)
+        let dashboardTabBarItem = UITabBarItem(title: "Dashboard", image: dashboardImage, tag: 0)
+        dashboardTabBarItem.selectedImage = dashboardSelectedImage
         
+        var searchConfig = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular, scale: .default)
+        let searchImage = UIImage(systemName: "magnifyingglass", withConfiguration: searchConfig)
+        searchConfig = UIImage.SymbolConfiguration(pointSize: 20, weight: .bold, scale: .default)
+        let searchSelectedImage = UIImage(systemName: "magnifyingglass.circle.fill", withConfiguration: searchConfig)
+        let searchTabBarItem = UITabBarItem(title: "Search", image: searchImage, tag: 1)
+        searchTabBarItem.selectedImage = searchSelectedImage
         
-        var myConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular, scale: .default)
-            let myImage = UIImage(systemName: "list.bullet", withConfiguration: configuration)
-        myConfiguration = UIImage.SymbolConfiguration(pointSize: 20, weight: .bold, scale: .default)
-            let MySelectedImage = UIImage(systemName: "list.bullet", withConfiguration: myConfiguration)
-            let MyTabBarItem = UITabBarItem(title: "Inventory", image: myImage, tag: 0)
-            tabBarItem.selectedImage = MySelectedImage
+        dashboardNav.tabBarItem = dashboardTabBarItem
+        searchNav.tabBarItem = searchTabBarItem
         
-        homeNav.tabBarItem = homeTabBarItem
-        mineNav.tabBarItem = MyTabBarItem
-        
-        viewControllers = [homeNav, mineNav]
+        viewControllers = [dashboardNav, searchNav]
     }
 }

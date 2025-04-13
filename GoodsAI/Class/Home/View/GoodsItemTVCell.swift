@@ -34,9 +34,7 @@ class GoodsItemTVCell: UITableViewCell {
         self.whiteBgView.addSubview(self.productPriceLable)
         self.whiteBgView.addSubview(self.inventoryLable)
         self.whiteBgView.addSubview(self.scoreLable)
-        self.contentView.addSubview(self.bottomLineView)
-
-
+        self.whiteBgView.addSubview(self.bottomLineView)
 
         self.whiteBgView.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(20)
@@ -48,12 +46,9 @@ class GoodsItemTVCell: UITableViewCell {
         self.imageContentView.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(10)
             make.top.equalToSuperview().offset(12)
-            make.width.equalTo(60)
-            make.height.equalTo(60)
-            make.bottom.equalToSuperview()
+            make.width.height.equalTo(60)
         }
    
-
         self.productNameLable.snp.makeConstraints { make in
             make.left.equalTo(self.imageContentView.snp.right).offset(12)
             make.top.equalTo(self.imageContentView.snp.top).offset(2)
@@ -69,20 +64,19 @@ class GoodsItemTVCell: UITableViewCell {
             make.right.equalToSuperview().offset(-10)
             make.bottom.equalTo(self.productPriceLable.snp.bottom)
         }
+        
         self.scoreLable.snp.makeConstraints { make in
             make.left.equalTo(self.productNameLable.snp.left)
             make.centerY.equalTo(self.imageContentView.snp.centerY)
             make.height.equalTo(14)
-
         }
         
         self.bottomLineView.snp.makeConstraints { make in
             make.left.equalTo(self.productNameLable.snp.left)
-            make.right.equalToSuperview().offset(-20)
+            make.right.equalToSuperview().offset(-10)
             make.height.equalTo(0.6)
-            make.bottom.equalToSuperview()
+            make.bottom.equalToSuperview().offset(-5)
         }
-   
     }
 
     func updateInfo(inventoryItem:InventoryItem){
@@ -112,7 +106,7 @@ class GoodsItemTVCell: UITableViewCell {
 
     lazy var imageContentView: UIImageView = {
         let view = UIImageView()
-        view.backgroundColor = .cColor_other_7C79F4
+        view.backgroundColor = UIColor.systemPurple
         view.layer.cornerRadius = 8
         view.layer.masksToBounds = true
         return view
@@ -122,7 +116,7 @@ class GoodsItemTVCell: UITableViewCell {
         let label = UILabel()
         label.text = "商品名称"
         label.textAlignment = NSTextAlignment.left
-        label.textColor = UIColor.cColor_text_333
+        label.textColor = UIColor.darkText
         label.font = UIFont.systemFont(ofSize: 14,weight: UIFont.Weight.semibold)
         return label
     }()
@@ -131,7 +125,7 @@ class GoodsItemTVCell: UITableViewCell {
         let label = UILabel()
         label.text = "$200"
         label.textAlignment = NSTextAlignment.left
-        label.textColor = UIColor.cColor_text_333
+        label.textColor = UIColor.darkText
         label.font = UIFont.systemFont(ofSize: 14,weight: UIFont.Weight.semibold)
         return label
     }()
@@ -140,7 +134,7 @@ class GoodsItemTVCell: UITableViewCell {
         let label = UILabel()
         label.text = "库存：200"
         label.textAlignment = NSTextAlignment.left
-        label.textColor = UIColor.cColor_text_9BA3AA
+        label.textColor = UIColor.lightGray
         label.font = UIFont.systemFont(ofSize: 12,weight: UIFont.Weight.regular)
         return label
     }()
@@ -149,14 +143,14 @@ class GoodsItemTVCell: UITableViewCell {
         let label = UILabel()
         label.text = ""
         label.textAlignment = NSTextAlignment.left
-        label.textColor = UIColor.cColor_text_333
+        label.textColor = UIColor.darkText
         label.font = UIFont.systemFont(ofSize: 12,weight: UIFont.Weight.regular)
         return label
     }()
     
     lazy var bottomLineView: UIView = {
         let view = UIView()
-        view.backgroundColor = .cColor_Line
+        view.backgroundColor = UIColor.lightGray.withAlphaComponent(0.3)
         return view
     }()
 
