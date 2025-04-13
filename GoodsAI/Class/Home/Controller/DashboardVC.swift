@@ -282,7 +282,14 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
             action: #selector(showOnboardingTutorial)
         )
         
-        navigationItem.rightBarButtonItems = [addButton, helpButton]
+        let infoButton = UIBarButtonItem(
+            image: UIImage(systemName: "info.circle"),
+            style: .plain,
+            target: self,
+            action: #selector(showInfoScreen)
+        )
+        
+        navigationItem.rightBarButtonItems = [addButton, helpButton, infoButton]
     }
     
     override func viewDidLoad() {
@@ -430,6 +437,57 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
         let onboardingVC = OnboardingViewController()
         onboardingVC.modalPresentationStyle = .fullScreen
         present(onboardingVC, animated: true)
+    }
+    
+    @objc func showInfoScreen() {
+        // Create alert controller with information
+        let alert = UIAlertController(
+            title: "Information",
+            message: nil,
+            preferredStyle: .alert
+        )
+        
+        // Add legal liability disclaimer
+        let disclaimerAction = UIAlertAction(title: "Legal Disclaimer", style: .default) { _ in
+            let disclaimerAlert = UIAlertController(
+                title: "Legal Disclaimer",
+                message: "This application is provided as-is without any warranties. The developers are not liable for any damages or losses resulting from the use of this app. Information provided is for general purposes only and should not be considered professional advice.",
+                preferredStyle: .alert
+            )
+            disclaimerAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            self.present(disclaimerAlert, animated: true)
+        }
+        
+        // Add credits
+        let creditsAction = UIAlertAction(title: "Credits", style: .default) { _ in
+            let creditsAlert = UIAlertController(
+                title: "Credits",
+                message: "This app uses the following technologies and resources:\n\n• UIKit for interface design\n• CoreML for machine learning capabilities\n• Vision framework for image processing\n• SnapKit for auto layout\n• Alamofire for networking\n• SDWebImage for image loading\n\nDesign elements and icons by Apple SF Symbols.",
+                preferredStyle: .alert
+            )
+            creditsAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            self.present(creditsAlert, animated: true)
+        }
+        
+        // Add contact info
+        let contactAction = UIAlertAction(title: "Contact Us", style: .default) { _ in
+            let contactAlert = UIAlertController(
+                title: "Contact Information",
+                message: "For support or inquiries:\nEmail: support@goodsai.com\nWebsite: www.goodsai.com",
+                preferredStyle: .alert
+            )
+            contactAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            self.present(contactAlert, animated: true)
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        
+        alert.addAction(disclaimerAction)
+        alert.addAction(creditsAction)
+        alert.addAction(contactAction)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true)
     }
     
     func saveNewItem(_ item: InventoryItem) {
