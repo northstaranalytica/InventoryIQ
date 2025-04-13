@@ -16,7 +16,6 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
     var allInventory: [InventoryItem] = []
     var filteredInventory: [InventoryItem] = []
     
-    var searchText: String = ""
     var sortOption = SortOption.nameAsc
     
     private lazy var voiceToTextTools: VoiceToTextTools = {
@@ -173,26 +172,51 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
         return object
     }()
     
-    // Background search view
-    lazy var searchBgView: UIView = {
+    // Background stats view
+    lazy var statsBgView: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor(red: 243/255.0, green: 243/255.0, blue: 243/255.0, alpha: 1.0)
         return view
     }()
     
-    private lazy var searchTextField: UITextField = {
-        let textField = UITextField()
-        textField.placeholder = "Search inventory..."
-        textField.textAlignment = .left
-        textField.textColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 1.0)
-        textField.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-        textField.borderStyle = .roundedRect
-        textField.rx.text.orEmpty.changed.subscribe(onNext: { (text) in
-            self.searchText = text
-            self.updateFilteredInventory()
-            self.tableView.reloadData()
-        }).disposed(by: disposeBag)
-        return textField
+    // Stats views to replace search functionality
+    private lazy var totalItemsLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .left
+        label.textColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 1.0)
+        label.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+        label.text = "Total Items: 0"
+        return label
+    }()
+    
+    private lazy var totalCountLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .left
+        label.textColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 1.0)
+        label.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+        label.text = "Total Count: 0"
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.7
+        return label
+    }()
+    
+    private lazy var totalAmountLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .left
+        label.textColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 1.0)
+        label.font = UIFont.systemFont(ofSize: 14, weight: .bold)
+        label.text = "Total Amount: $0.00"
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.7
+        return label
+    }()
+    
+    private lazy var statsStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [totalItemsLabel, totalCountLabel, totalAmountLabel])
+        stackView.axis = .vertical
+        stackView.distribution = .fillEqually
+        stackView.spacing = 2
+        return stackView
     }()
     
     private lazy var sortButton: UIButton = {
@@ -267,36 +291,35 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
         setupNavigationItems()
         
         // Add subviews
-        self.view.addSubview(self.searchBgView)
-        self.searchBgView.addSubview(self.searchTextField)
-        self.searchBgView.addSubview(self.sortButton)
+        self.view.addSubview(self.statsBgView)
+        self.statsBgView.addSubview(self.statsStackView)
+        self.statsBgView.addSubview(self.sortButton)
         self.view.addSubview(self.tableView)
         
         // Layout constraints
-        self.searchBgView.snp.makeConstraints { make in
+        self.statsBgView.snp.makeConstraints { make in
             make.left.equalToSuperview()
             make.top.equalToSuperview()
             make.right.equalToSuperview()
         }
         
         self.sortButton.snp.makeConstraints { make in
-            make.centerY.equalTo(self.searchTextField)
+            make.centerY.equalTo(self.statsStackView)
             make.right.equalToSuperview().offset(-20)
             make.width.equalTo(40)
             make.height.equalTo(40)
         }
         
-        self.searchTextField.snp.makeConstraints { make in
+        self.statsStackView.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(20)
-            make.top.equalToSuperview().offset(10)
+            make.top.equalToSuperview().offset(8)
             make.right.equalTo(self.sortButton.snp.left).offset(-20)
-            make.height.equalTo(36)
-            make.bottom.equalToSuperview().offset(-10)
+            make.bottom.equalToSuperview().offset(-8)
         }
         
         self.tableView.snp.makeConstraints { make in
             make.left.equalToSuperview()
-            make.top.equalTo(self.searchBgView.snp.bottom).offset(10)
+            make.top.equalTo(self.statsBgView.snp.bottom).offset(10)
             make.right.equalToSuperview()
             make.bottom.equalToSuperview()
         }
@@ -340,12 +363,8 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
     }
     
     func updateFilteredInventory() {
-        self.filteredInventory = allInventory.filter { item in
-            if searchText.isEmpty {
-                return true
-            }
-            return item.productName.lowercased().contains(searchText.lowercased()) || item.barcode.lowercased().contains(searchText.lowercased())
-        }
+        // Since we're not using search anymore, just use all inventory items
+        self.filteredInventory = allInventory
         
         switch sortOption {
         case .nameAsc:
@@ -358,6 +377,9 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
             self.filteredInventory.sort { $0.productPrice > $1.productPrice }
         }
         
+        // Update stats
+        updateStats()
+        
         // Show empty state if needed
         if self.filteredInventory.isEmpty {
             self.tableView.setViewState(state: .CT_empty, title: "No inventory items found")
@@ -366,6 +388,17 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
         }
         
         self.tableView.reloadData()
+    }
+    
+    // New function to update statistics
+    private func updateStats() {
+        let totalItems = allInventory.count
+        let totalCount = allInventory.reduce(0) { $0 + $1.quantityInStock }
+        let totalAmount = allInventory.reduce(0.0) { $0 + ($1.productPrice * Double($1.quantityInStock)) }
+        
+        totalItemsLabel.text = "Total Items: \(totalItems)"
+        totalCountLabel.text = "Total Count: \(totalCount)"
+        totalAmountLabel.text = "Total Amount: $\(String(format: "%.2f", totalAmount))"
     }
     
     @objc func addNewItem() {
@@ -405,6 +438,7 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
         self.allInventory.append(newItem)
         self.updateFilteredInventory()
         self.tableView.reloadData()
+        // Stats are already updated in updateFilteredInventory
         
         // Save to local storage
         ProgressTools.showLoading("Adding item...", self.view)
@@ -707,6 +741,7 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
                 switch result {
                 case .success(_):
                     ProgressTools.showSuccess("Item updated successfully")
+                    self.updateStats()
                 case .failure(let error):
                     ProgressTools.showError("Failed to update item: \(error.localizedDescription)")
                 }
@@ -721,6 +756,7 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
             allInventory.remove(at: index)
             updateFilteredInventory()
             tableView.reloadData()
+            // Stats are already updated in updateFilteredInventory
         }
         
         // Then delete from storage
