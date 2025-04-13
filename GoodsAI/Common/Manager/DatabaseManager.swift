@@ -25,8 +25,8 @@ class DatabaseManager {
     private var debugSimilarityScores: [String: Float] = [:]
     
     // UserDefaults keys
-    private let itemsStorageKey = "com.goodsai.inventoryItems"
-    private let vectorsStorageKey = "com.goodsai.imageVectors"
+    private let itemsStorageKey = "com.inventoryiq.inventoryItems"
+    private let vectorsStorageKey = "com.inventoryiq.imageVectors"
     
     private init() {
         // Load CLIP models

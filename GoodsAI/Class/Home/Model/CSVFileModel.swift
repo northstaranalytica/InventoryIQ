@@ -19,6 +19,16 @@ struct DataModel {
     var thumbImage: UIImage?  
 }
 
+// Extension to create a namespace for app-wide functions
+// This allows calling parseCSV as InventoryIQ.parseCSV()
+enum InventoryIQ {
+    // Parse CSV and process image columns
+    static func parseCSV(filePath: URL, completion: @escaping ([InventoryItem]) -> Void) {
+        // Delegate to the free function implementation
+        parseCSV(filePath: filePath, completion: completion)
+    }
+}
+
 // Parse CSV and process image columns
 func parseCSV(filePath: URL,completion: @escaping ([InventoryItem]) -> Void) {
     

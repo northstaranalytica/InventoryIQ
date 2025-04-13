@@ -222,7 +222,7 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
         guard let filePathURL = urls.first else { return }
         // Process the selected file, e.g. get file content or display images
         print("Selected file URL: \(filePathURL)")
-        GoodsAI.parseCSV(filePath: filePathURL) { items in
+        InventoryIQ.parseCSV(filePath: filePathURL) { items in
             self.importInventoryItems(items: items)
         }
     }

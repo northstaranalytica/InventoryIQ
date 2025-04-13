@@ -86,7 +86,7 @@ class OnboardingContentViewController: UIViewController {
 class OnboardingViewController: UIViewController {
     
     // UserDefaults key to store onboarding shown status
-    static let hasShownOnboardingKey = "com.goodsai.hasShownOnboarding"
+    static let hasShownOnboardingKey = "com.inventoryiq.hasShownOnboarding"
     
     // Check if onboarding has been shown
     static func hasOnboardingBeenShown() -> Bool {
