@@ -19,6 +19,7 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
     @Published var similarItems: [InventoryItem] = []
     var searchImage: UIImage?
     var searchText: String = ""
+    var isVoiceSearchActive: Bool = false // Track if voice search is active
     
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .grouped)
@@ -43,12 +44,18 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
         voiceToText.blockInputText = { [weak self] text in
             guard let self = self else { return }
             self.searchText = text
-            self.tableView.reloadData()
+            // Only reload the text search cell to prevent affecting image search
+            if let indexPath = IndexPath(row: 0, section: 0) as? IndexPath {
+                self.tableView.reloadRows(at: [indexPath], with: .none)
+            }
         }
         voiceToText.blockError = { [weak self] errorMessage in
             guard let self = self else { return }
             ProgressTools.showError(errorMessage)
-            self.tableView.reloadData()
+            // Only reload the text search cell
+            if let indexPath = IndexPath(row: 0, section: 0) as? IndexPath {
+                self.tableView.reloadRows(at: [indexPath], with: .none)
+            }
         }
         return voiceToText
     }()
@@ -204,8 +211,13 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
             
             // Start fresh recording session
             self.searchText = ""
+            self.isVoiceSearchActive = true
             self.voiceToText.startLiveTranscribe()
-            self.tableView.reloadData()
+            
+            // Only reload the text search cell
+            if let indexPath = IndexPath(row: 0, section: 0) as? IndexPath {
+                self.tableView.reloadRows(at: [indexPath], with: .none)
+            }
             
             // Dismiss progress after a short delay
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
@@ -214,9 +226,13 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
             
         case 2: // Stop voice search and perform search
             self.voiceToText.stopLiveTranscribe()
+            self.isVoiceSearchActive = false
             
             if !self.searchText.isEmpty {
-                self.tableView.reloadData()
+                // Only reload the text search cell
+                if let indexPath = IndexPath(row: 0, section: 0) as? IndexPath {
+                    self.tableView.reloadRows(at: [indexPath], with: .none)
+                }
                 self.findSimilarItemsByText()
             } else {
                 ProgressTools.showError("No speech detected, please try again")
@@ -270,7 +286,11 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
             cell.configure(title: "Search by Keywords", 
                           description: "Find items using text search",
                           image: UIImage(systemName: "doc.text.magnifyingglass"),
-                          buttonTitle: "Search")
+                          buttonTitle: "")
+            
+            // Use icon instead of text for primary button
+            cell.actionButton.setImage(UIImage(systemName: "magnifyingglass"), for: .normal)
+            cell.actionButton.tintColor = .white
             
             cell.actionHandler = { [weak self] in
                 self?.handleTextSearchAction(type: 0)
@@ -279,13 +299,14 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
             // Add a voice search button with appropriate state
             if self.voiceToText.audioEngine.isRunning {
                 // Recording is active - show stop button with red background and current text
-                cell.addSecondaryButton(title: "Stop Recording") { [weak self] in
+                cell.addSecondaryButton(title: "") { [weak self] in
                     self?.handleTextSearchAction(type: 2)
                 }
                 
                 // Set button appearance for recording state
                 cell.secondaryButton.backgroundColor = UIColor(red: 255/255.0, green: 59/255.0, blue: 48/255.0, alpha: 1.0)
                 cell.secondaryButton.setImage(UIImage(systemName: "stop.fill"), for: .normal)
+                cell.secondaryButton.tintColor = .white
                 
                 // Show the current transcription
                 if !searchText.isEmpty {
@@ -295,7 +316,7 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
                 }
             } else {
                 // Not recording - show normal voice search button
-                cell.addSecondaryButton(title: "Voice Search") { [weak self] in
+                cell.addSecondaryButton(title: "") { [weak self] in
                     self?.handleTextSearchAction(type: 1)
                 }
                 
@@ -317,30 +338,46 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
                 cell.configure(title: "Image Search",
                               description: "Find similar items to this image",
                               image: searchImage,
-                              buttonTitle: "Search")
+                              buttonTitle: "")
+                
+                // Use icon instead of text for search button
+                cell.actionButton.setImage(UIImage(systemName: "magnifyingglass"), for: .normal)
+                cell.actionButton.tintColor = .white
                 
                 cell.actionHandler = { [weak self] in
                     self?.handleImageSearchAction(type: 2)
                 }
                 
                 // Add a "New Search" button to allow taking another photo
-                cell.addSecondaryButton(title: "New Search") { [weak self] in
+                cell.addSecondaryButton(title: "") { [weak self] in
                     self?.searchImage = nil
                     self?.tableView.reloadData()
                 }
+                
+                // Set button appearance for new search
+                cell.secondaryButton.setImage(UIImage(systemName: "arrow.counterclockwise"), for: .normal)
+                cell.secondaryButton.tintColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 1.0)
             } else {
                 cell.configure(title: "Search by Image",
                               description: "Take a photo or select from gallery",
                               image: UIImage(systemName: "camera"),
-                              buttonTitle: "Take Photo")
+                              buttonTitle: "")
+                
+                // Use icon instead of text for camera button
+                cell.actionButton.setImage(UIImage(systemName: "camera.fill"), for: .normal)
+                cell.actionButton.tintColor = .white
                 
                 cell.actionHandler = { [weak self] in
                     self?.handleImageSearchAction(type: 0)
                 }
                 
-                cell.addSecondaryButton(title: "Gallery") { [weak self] in
+                cell.addSecondaryButton(title: "") { [weak self] in
                     self?.handleImageSearchAction(type: 1)
                 }
+                
+                // Set button appearance for gallery
+                cell.secondaryButton.setImage(UIImage(systemName: "photo.on.rectangle"), for: .normal)
+                cell.secondaryButton.tintColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 1.0)
             }
             
             return cell
@@ -472,6 +509,11 @@ class SearchOptionCell: UITableViewCell {
         return _secondaryButton
     }
     
+    // Make action button accessible as well
+    var actionButton: UIButton {
+        return _actionButton
+    }
+    
     private lazy var containerView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
@@ -501,7 +543,7 @@ class SearchOptionCell: UITableViewCell {
         return imageView
     }()
     
-    private lazy var actionButton: UIButton = {
+    private lazy var _actionButton: UIButton = {
         let button = UIButton(type: .system)
         button.backgroundColor = UIColor(red: 0/255.0, green: 122/255.0, blue: 255/255.0, alpha: 1.0)
         button.setTitleColor(.white, for: .normal)
@@ -548,7 +590,7 @@ class SearchOptionCell: UITableViewCell {
         containerView.addSubview(iconImageView)
         containerView.addSubview(titleLabel)
         containerView.addSubview(descriptionLabel)
-        containerView.addSubview(actionButton)
+        containerView.addSubview(_actionButton)
         containerView.addSubview(_secondaryButton)
         containerView.addSubview(tertiaryButton)
         
@@ -574,7 +616,7 @@ class SearchOptionCell: UITableViewCell {
             make.right.equalToSuperview().offset(-15)
         }
         
-        actionButton.snp.makeConstraints { make in
+        _actionButton.snp.makeConstraints { make in
             make.top.equalTo(descriptionLabel.snp.bottom).offset(15)
             make.left.equalTo(iconImageView.snp.right).offset(15)
             make.height.equalTo(40)
@@ -602,7 +644,7 @@ class SearchOptionCell: UITableViewCell {
         _secondaryButton.isHidden = true
         tertiaryButton.isHidden = true
         
-        actionButton.snp.remakeConstraints { make in
+        _actionButton.snp.remakeConstraints { make in
             make.top.equalTo(descriptionLabel.snp.bottom).offset(15)
             make.left.equalTo(iconImageView.snp.right).offset(15)
             make.right.equalToSuperview().offset(-15)
@@ -615,13 +657,12 @@ class SearchOptionCell: UITableViewCell {
         _secondaryButton.isHidden = false
         tertiaryButton.isHidden = true
         
-        actionButton.snp.remakeConstraints { make in
+        _actionButton.snp.remakeConstraints { make in
             make.top.equalTo(descriptionLabel.snp.bottom).offset(15)
             make.left.equalTo(iconImageView.snp.right).offset(15)
             make.height.equalTo(40)
             make.bottom.equalToSuperview().offset(-15)
             // Calculate width dynamically based on available space
-            // Remove the hard-coded width that's causing conflicts
             make.right.equalTo(_secondaryButton.snp.left).offset(-10) // Ensure spacing to secondaryButton
         }
         
@@ -630,7 +671,7 @@ class SearchOptionCell: UITableViewCell {
             make.right.equalToSuperview().offset(-15)
             make.height.equalTo(40)
             make.bottom.equalToSuperview().offset(-15)
-            make.width.equalTo(actionButton.snp.width) // Equal width to actionButton
+            make.width.equalTo(_actionButton.snp.width) // Equal width to actionButton
         }
     }
     
@@ -641,7 +682,7 @@ class SearchOptionCell: UITableViewCell {
         // Using flex layout for buttons to ensure they fit
         let buttonSpacing: CGFloat = 8
         
-        actionButton.snp.remakeConstraints { make in
+        _actionButton.snp.remakeConstraints { make in
             make.top.equalTo(descriptionLabel.snp.bottom).offset(15)
             make.left.equalTo(iconImageView.snp.right).offset(15)
             make.height.equalTo(40)
@@ -649,18 +690,18 @@ class SearchOptionCell: UITableViewCell {
         }
         
         _secondaryButton.snp.remakeConstraints { make in
-            make.top.equalTo(actionButton)
-            make.left.equalTo(actionButton.snp.right).offset(buttonSpacing)
+            make.top.equalTo(_actionButton)
+            make.left.equalTo(_actionButton.snp.right).offset(buttonSpacing)
             make.height.equalTo(40)
-            make.width.equalTo(actionButton.snp.width)
+            make.width.equalTo(_actionButton.snp.width)
         }
         
         tertiaryButton.snp.remakeConstraints { make in
-            make.top.equalTo(actionButton)
+            make.top.equalTo(_actionButton)
             make.left.equalTo(_secondaryButton.snp.right).offset(buttonSpacing)
             make.right.equalToSuperview().offset(-15)
             make.height.equalTo(40)
-            make.width.equalTo(actionButton.snp.width)
+            make.width.equalTo(_actionButton.snp.width)
             make.bottom.equalToSuperview().offset(-15)
         }
     }
@@ -669,7 +710,7 @@ class SearchOptionCell: UITableViewCell {
         titleLabel.text = title
         descriptionLabel.text = description
         iconImageView.image = image
-        actionButton.setTitle(buttonTitle, for: .normal)
+        _actionButton.setTitle(buttonTitle, for: .normal)
         
         // Set default layout
         configureForSingleButton()
