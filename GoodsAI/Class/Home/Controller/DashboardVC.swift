@@ -414,8 +414,8 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
     // MARK: - Swipe to Delete
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        // Only allow actions for inventory items, not add item cell
-        guard indexPath.section == 1 && tableView == self.tableView && indexPath.row < filteredInventory.count else {
+        // Only allow actions for inventory items
+        guard tableView == self.tableView && indexPath.row < filteredInventory.count else {
             return nil
         }
         
@@ -459,6 +459,92 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
         
         // Create and return configuration
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction])
+        return configuration
+    }
+    
+    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        // Only allow actions for inventory items
+        guard tableView == self.tableView && indexPath.row < filteredInventory.count else {
+            return nil
+        }
+        
+        let item = filteredInventory[indexPath.row]
+        
+        // Create quick edit action for incrementing quantity
+        let incrementAction = UIContextualAction(style: .normal, title: "+1") { [self] (_, _, completionHandler) in
+            // Increment the quantity by 1
+            let updatedQuantity = item.quantityInStock + 1
+            
+            // Create updated item
+            let updatedItem = InventoryItem(
+                barcode: item.barcode,
+                productName: item.productName,
+                productPrice: item.productPrice,
+                imageData: item.imageData,
+                recordID: item.recordID,
+                quantityInStock: updatedQuantity,
+                thumbImage: item.thumbImage
+            )
+            
+            // Update in local array first
+            if let index = self.allInventory.firstIndex(where: { $0.barcode == item.barcode }) {
+                self.allInventory[index] = updatedItem
+                self.updateFilteredInventory()
+                self.tableView.reloadRows(at: [indexPath], with: .automatic)
+            }
+            
+            // Update in CloudKit
+            if let _ = item.recordID {
+                self.updateItemInCloudKit(updatedItem)
+            } else {
+                ProgressTools.showSuccess("Quantity updated locally")
+            }
+            
+            completionHandler(true)
+        }
+        
+        // Create quick edit action for decrementing quantity
+        let decrementAction = UIContextualAction(style: .normal, title: "-1") { [self] (_, _, completionHandler) in
+            // Prevent negative quantities
+            let updatedQuantity = max(0, item.quantityInStock - 1)
+            
+            // Create updated item
+            let updatedItem = InventoryItem(
+                barcode: item.barcode,
+                productName: item.productName,
+                productPrice: item.productPrice,
+                imageData: item.imageData,
+                recordID: item.recordID,
+                quantityInStock: updatedQuantity,
+                thumbImage: item.thumbImage
+            )
+            
+            // Update in local array first
+            if let index = self.allInventory.firstIndex(where: { $0.barcode == item.barcode }) {
+                self.allInventory[index] = updatedItem
+                self.updateFilteredInventory()
+                self.tableView.reloadRows(at: [indexPath], with: .automatic)
+            }
+            
+            // Update in CloudKit
+            if let _ = item.recordID {
+                self.updateItemInCloudKit(updatedItem)
+            } else {
+                ProgressTools.showSuccess("Quantity updated locally")
+            }
+            
+            completionHandler(true)
+        }
+        
+        // Add images to actions (SF Symbols)
+        incrementAction.image = UIImage(systemName: "plus.circle")
+        incrementAction.backgroundColor = .systemGreen
+        
+        decrementAction.image = UIImage(systemName: "minus.circle")
+        decrementAction.backgroundColor = .systemOrange
+        
+        // Create and return configuration
+        let configuration = UISwipeActionsConfiguration(actions: [incrementAction, decrementAction])
         return configuration
     }
     
