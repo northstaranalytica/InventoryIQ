@@ -143,7 +143,12 @@ class OnboardingViewController: UIViewController {
         OnboardingPage(
             image: createLargeSymbol(name: "mic.fill", color: .systemRed),
             title: "Voice Search",
-            description: "Tap the microphone button to search using your voice. Speak clearly to find what you're looking for."
+            description: "Tap the microphone button in the search tab to find items by speaking your search query. Simply tap once to start and stop recording."
+        ),
+        OnboardingPage(
+            image: createLargeSymbol(name: "mic.circle.fill", color: .systemPink),
+            title: "Voice Input for Forms",
+            description: "Press and hold the microphone button next to text fields when adding or editing items. Release when you're done speaking to automatically fill the field with your voice input."
         ),
         OnboardingPage(
             image: createLargeSymbol(name: "camera.fill", color: .systemOrange),
