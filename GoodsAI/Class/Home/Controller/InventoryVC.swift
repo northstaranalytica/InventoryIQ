@@ -9,6 +9,8 @@ import UIKit
 import RxSwift
 import MobileCoreServices
 import SwiftCSV
+import Foundation
+
 class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource,UIDocumentPickerDelegate {
 
     private let disposeBag = DisposeBag()
@@ -155,53 +157,41 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if (self.allInventory.isEmpty){
-            updateInventory(isUpdateDatabase: false)
+            loadInventory()
         }
     }
     
     
-    func updateInventory( isUpdateDatabase:Bool){
-        ProgressTools.showLoading("Updating inventory...", self.view)
-        CloudKitManager.shared.fetchProducts { [weak self] records in
-            guard let self = self else {
-                ProgressTools.hide(nil)
-                return
-            }
-            
-            // Add a check for empty records
-            if records.isEmpty {
-                // If no records, just hide the spinner and keep the current items
+    func loadInventory() {
+        ProgressTools.showLoading("Loading inventory...", self.view)
+        
+        // Use DatabaseManager to load all items
+        DatabaseManager.shared.getAllItems { items in
+            DispatchQueue.main.async {
+                self.allInventory = items
+                self.tempInventory = items
+                self.tableView.reloadData()
                 ProgressTools.hide(self.view)
-                // If we had no items before, we should at least initialize an empty array
-                if self.allInventory.isEmpty {
-                    self.allInventory = []
-                    self.tempInventory = []
-                    self.tableView.reloadData()
-                }
-                return
             }
-            
-            let allData:[LocalInventory] = records
-            var tempData:[InventoryItem] = []
-            for good in allData{
-                let imageData = good.thumbImage?.jpegData(compressionQuality: 0.8)
-                let item = InventoryItem(barcode: good.barCode, productName: good.productName, productPrice: good.price, imageData: imageData,recordID: good.id, quantityInStock: good.quantityInStock, thumbImage: good.thumbImage)
-                tempData.append(item)
-                if(isUpdateDatabase){
-                    DatabaseManager.shared.addInventoryItem(barcode: good.barCode, productName: good.productName, productPrice: good.price, imageData: imageData,quantityInStock: good.quantityInStock, thumbImage: good.thumbImage)
-                }
-            }
-            ProgressTools.hide(self.view)
-            self.allInventory = tempData
-            self.tempInventory = tempData
-            self.tableView.reloadData()
         }
     }
 
     
     @objc func clickSearchAction(btn: UIButton) {
-
-
+        // Filter items based on search text
+        guard let searchText = self.contentTextFiled.text, !searchText.isEmpty else {
+            // If search text is empty, show all items
+            self.tempInventory = self.allInventory
+            self.tableView.reloadData()
+            return
+        }
+        
+        // Filter items by name or barcode
+        self.tempInventory = self.allInventory.filter { item in
+            return item.productName.lowercased().contains(searchText.lowercased()) ||
+                   item.barcode.lowercased().contains(searchText.lowercased())
+        }
+        self.tableView.reloadData()
     }
 
     private func importFile() {
@@ -216,10 +206,9 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
         let secondVC = AddInventoryVC()
         secondVC.blockUpdate = {[weak self] type in
             guard let `self` = self else { return }
-            updateInventory(isUpdateDatabase: true)
+            self.loadInventory()
         }
         self.navigationController?.pushViewController(secondVC, animated: true)
-        
     }
     
     
@@ -229,7 +218,7 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
         // Process the selected file, e.g. get file content or display images
         print("Selected file URL: \(filePathURL)")
         GoodsAI.parseCSV(filePath: filePathURL) { items in
-            self.uploadInventory(note: items)
+            self.importInventoryItems(items: items)
         }
     }
     
@@ -237,26 +226,37 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
         print("Document picker was cancelled")
     }
         
-    func uploadInventory(note:[InventoryItem]){
-        ProgressTools.showLoading("Importing...",nil)
-        let manager = FileUploadManager()
-        manager.uploadFiles(
-            note,
-            eachProgress: { result in
-            },
-            allComplete: { results in
-                DispatchQueue.main.async {
-                    ProgressTools.showSuccess(String(results.count)+" items imported successfully")
-                    self.updateInventory(isUpdateDatabase: true)
+    func importInventoryItems(items: [InventoryItem]) {
+        ProgressTools.showLoading("Importing...", nil)
+        
+        let dispatchGroup = DispatchGroup()
+        var successCount = 0
+        
+        for item in items {
+            dispatchGroup.enter()
+            
+            DatabaseManager.shared.saveItem(item: item) { result in
+                switch result {
+                case .success(_):
+                    successCount += 1
+                case .failure(let error):
+                    print("Failed to import item \(item.barcode): \(error.localizedDescription)")
                 }
+                dispatchGroup.leave()
             }
-        )
+        }
+        
+        dispatchGroup.notify(queue: .main) {
+            ProgressTools.showSuccess("\(successCount) items imported successfully")
+            self.loadInventory()
+        }
     }
     
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return self.tempInventory.count
     }
+    
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let view = UIView(frame: CGRect(x: 0, y: 0, width: kScreenWidth, height: 40))
         view.backgroundColor = .cColor_F3F3F3
@@ -267,6 +267,7 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
         view.addSubview(label)
         return view
     }
+    
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 40
     }
@@ -279,26 +280,39 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
     
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-
         let secondVC = AddInventoryVC()
         secondVC.inventoryItem = self.tempInventory[indexPath.row]
         secondVC.blockUpdate = {[weak self] type in
             guard let `self` = self else { return }
-            updateInventory(isUpdateDatabase: true)
+            self.loadInventory()
         }
         self.navigationController?.pushViewController(secondVC, animated: true)
-
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
+            let item = self.tempInventory[indexPath.row]
             
-            if(self.allInventory[indexPath.row].recordID != nil){
-                ProgressTools.showLoading("Deleting...",nil)
-                CloudKitManager.shared.deleteRecord(recordID: self.tempInventory[indexPath.row].recordID!) { result in
-                    DispatchQueue.main.async {
-                        ProgressTools.showSuccess("Successfully deleted")
-                        self.updateInventory(isUpdateDatabase: true)
+            // Delete the item from both arrays
+            if let index = self.allInventory.firstIndex(where: { $0.barcode == item.barcode }) {
+                self.allInventory.remove(at: index)
+            }
+            self.tempInventory.remove(at: indexPath.row)
+            
+            // Update UI immediately
+            tableView.deleteRows(at: [indexPath], with: .fade)
+            
+            // Delete from storage
+            ProgressTools.showLoading("Deleting...", nil)
+            DatabaseManager.shared.deleteItem(barcode: item.barcode) { success in
+                DispatchQueue.main.async {
+                    ProgressTools.hide(nil)
+                    if success {
+                        ProgressTools.showSuccess("Item deleted successfully")
+                    } else {
+                        ProgressTools.showError("Failed to delete item")
+                        // Reload in case of error
+                        self.loadInventory()
                     }
                 }
             }
@@ -325,20 +339,4 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
             return filtered.sorted { $0.productPrice > $1.productPrice }
         }
     }
-    
-    
-    
-
-        
-        
-
-}
-
-enum SortOption: String, CaseIterable, Identifiable {
-    case nameAsc = "Name (A-Z)"
-    case nameDesc = "Name (Z-A)"
-    case priceAsc = "Price (Low-High)"
-    case priceDesc = "Price (High-Low)"
-    
-    var id: String { self.rawValue }
 }

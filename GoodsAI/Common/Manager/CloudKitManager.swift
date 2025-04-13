@@ -195,6 +195,53 @@ class CloudKitManager {
         }
     }
     
-    
+    // MARK: - 更新数据方法
+    func updateNote(note: InventoryItem, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let recordID = note.recordID else {
+            completion(.failure(NSError(domain: "CloudKitManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "No record ID found"])))
+            return
+        }
+        
+        // Fetch the record first
+        let operation = CKFetchRecordsOperation(recordIDs: [recordID])
+        
+        operation.fetchRecordsCompletionBlock = { [weak self] recordsDict, error in
+            guard let self = self else { return }
+            
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            
+            guard let record = recordsDict?[recordID] else {
+                completion(.failure(NSError(domain: "CloudKitManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "Record not found"])))
+                return
+            }
+            
+            // Update record with new values
+            record["productName"] = note.productName as CKRecordValue
+            record["price"] = note.productPrice as CKRecordValue
+            record["quantityInStock"] = note.quantityInStock as CKRecordValue
+            record["timestamp"] = Date().timeIntervalSince1970 as CKRecordValue // Update timestamp
+            
+            // If thumbnail image has changed, update it
+            if let thumbImage = note.thumbImage {
+                if let imageAsset = self.createImageAsset(image: thumbImage) {
+                    record["thumbImage"] = imageAsset as CKRecordValue
+                }
+            }
+            
+            // Save the updated record
+            self.publicDB?.save(record) { _, error in
+                if let error = error {
+                    completion(.failure(error))
+                } else {
+                    completion(.success(()))
+                }
+            }
+        }
+        
+        publicDB?.add(operation)
+    }
     
 }

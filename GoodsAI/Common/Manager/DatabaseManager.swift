@@ -1,5 +1,5 @@
-import Foundation
 import UIKit
+import Foundation
 import Vision
 import CoreML
 import os.log
@@ -24,18 +24,160 @@ class DatabaseManager {
     // Dictionary to store similarity scores for debugging
     private var debugSimilarityScores: [String: Float] = [:]
     
+    // UserDefaults keys
+    private let itemsStorageKey = "com.goodsai.inventoryItems"
+    private let vectorsStorageKey = "com.goodsai.imageVectors"
+    
     private init() {
         // Load CLIP models
         loadCLIPModels()
+        
+        // Load stored data
+        loadStoredData()
     }
+    
+    // MARK: - Data Persistence
+    
+    private func loadStoredData() {
+        if let itemsData = UserDefaults.standard.data(forKey: itemsStorageKey) {
+            do {
+                let decoder = JSONDecoder()
+                // Using a dictionary [String: Data] to store serialized InventoryItems
+                let serializedItems = try decoder.decode([String: Data].self, from: itemsData)
+                
+                // Deserialize each item
+                for (barcode, itemData) in serializedItems {
+                    do {
+                        let item = try decoder.decode(InventoryItem.self, from: itemData)
+                        self.inventoryItems[barcode] = item
+                    } catch {
+                        self.logger.error("Failed to decode item with barcode \(barcode): \(error.localizedDescription)")
+                    }
+                }
+                
+                self.logger.info("Loaded \(self.inventoryItems.count) items from local storage")
+            } catch {
+                self.logger.error("Failed to load items from UserDefaults: \(error.localizedDescription)")
+            }
+        }
+        
+        if let vectorsData = UserDefaults.standard.data(forKey: vectorsStorageKey) {
+            do {
+                let decoder = JSONDecoder()
+                self.imageVectors = try decoder.decode([String: [Float]].self, from: vectorsData)
+                self.logger.info("Loaded \(self.imageVectors.count) image vectors from local storage")
+            } catch {
+                self.logger.error("Failed to load vectors from UserDefaults: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func saveItemsToStorage() {
+        do {
+            let encoder = JSONEncoder()
+            
+            // Create a dictionary to store serialized items
+            var serializedItems: [String: Data] = [:]
+            
+            // Serialize each item
+            for (barcode, item) in self.inventoryItems {
+                do {
+                    let itemData = try encoder.encode(item)
+                    serializedItems[barcode] = itemData
+                } catch {
+                    self.logger.error("Failed to encode item with barcode \(barcode): \(error.localizedDescription)")
+                }
+            }
+            
+            // Save serialized items dictionary
+            let itemsData = try encoder.encode(serializedItems)
+            UserDefaults.standard.set(itemsData, forKey: itemsStorageKey)
+            
+            // Save vectors dictionary
+            let vectorsData = try encoder.encode(self.imageVectors)
+            UserDefaults.standard.set(vectorsData, forKey: vectorsStorageKey)
+            
+            UserDefaults.standard.synchronize()
+            self.logger.info("Saved \(self.inventoryItems.count) items and \(self.imageVectors.count) vectors to local storage")
+        } catch {
+            self.logger.error("Failed to save data to UserDefaults: \(error.localizedDescription)")
+        }
+    }
+    
+    // MARK: - Item Management
+    
+    func saveItem(item: InventoryItem, completion: @escaping (Result<InventoryItem, Error>) -> Void) {
+        var newItem = item
+        
+        // Generate embedding for the item's image if available
+        if let imageData = item.imageData {
+            if let embedding = generateCLIPEmbedding(for: imageData) {
+                newItem.embedding = embedding
+                self.imageVectors[item.barcode] = embedding
+                self.logger.info("Generated embedding for item \(item.barcode)")
+            } else {
+                self.logger.error("Failed to generate embedding for item \(item.barcode)")
+            }
+        }
+        
+        // Save to local storage
+        self.inventoryItems[newItem.barcode] = newItem
+        
+        // Persist changes
+        saveItemsToStorage()
+        
+        // Return success with the new item
+        completion(.success(newItem))
+    }
+    
+    func updateItem(item: InventoryItem, completion: @escaping (Result<InventoryItem, Error>) -> Void) {
+        var updatedItem = item
+        
+        // Generate new embedding if the image has changed
+        if let imageData = item.imageData {
+            if let embedding = generateCLIPEmbedding(for: imageData) {
+                updatedItem.embedding = embedding
+                self.imageVectors[item.barcode] = embedding
+                self.logger.info("Updated embedding for item \(item.barcode)")
+            }
+        }
+        
+        // Update local storage
+        self.inventoryItems[updatedItem.barcode] = updatedItem
+        
+        // Persist changes
+        saveItemsToStorage()
+        
+        // Return success with the updated item
+        completion(.success(updatedItem))
+    }
+    
+    func deleteItem(barcode: String, completion: @escaping (Bool) -> Void) {
+        // Remove from local storage
+        self.inventoryItems.removeValue(forKey: barcode)
+        self.imageVectors.removeValue(forKey: barcode)
+        
+        // Persist changes
+        saveItemsToStorage()
+        
+        completion(true)
+    }
+    
+    func getAllItems(completion: @escaping ([InventoryItem]) -> Void) {
+        // Return all items sorted by name
+        let items = Array(self.inventoryItems.values).sorted { $0.productName < $1.productName }
+        completion(items)
+    }
+    
+    // MARK: - CLIP Models Loading
     
     private func loadCLIPModels() {
         // Try to load the models from the app bundle
         if let imageEncoderURL = Bundle.main.url(forResource: "ImageEncoder_mobileCLIP_s2", withExtension: "mlmodelc"),
            let textEncoderURL = Bundle.main.url(forResource: "TextEncoder_mobileCLIP_s2", withExtension: "mlmodelc") {
             do {
-                imageEncoder = try MLModel(contentsOf: imageEncoderURL)
-                textEncoder = try MLModel(contentsOf: textEncoderURL)
+                self.imageEncoder = try MLModel(contentsOf: imageEncoderURL)
+                self.textEncoder = try MLModel(contentsOf: textEncoderURL)
                 print("CLIP models loaded successfully from bundle")
                 return
             } catch {
@@ -479,19 +621,19 @@ class DatabaseManager {
     
     private func generateCLIPEmbedding(for imageData: Data) -> [Float]? {
         if debugVectorization {
-            logger.info("🖼️ Generating vector embedding for image")
+            self.logger.info("🖼️ Generating vector embedding for image")
         }
         
-        guard let imageEncoder = imageEncoder,
+        guard let imageEncoder = self.imageEncoder,
               let image = UIImage(data: imageData),
               let resizedImage = resizeImage(image, targetSize: CGSize(width: 256, height: 256)),
               let pixelBuffer = pixelBuffer(from: resizedImage) else {
-            logger.error("❌ Failed to prepare image for vectorization")
+            self.logger.error("❌ Failed to prepare image for vectorization")
             return nil
         }
         
         if debugVectorization {
-            logger.debug("Image prepared for vectorization: size \(resizedImage.size.width)x\(resizedImage.size.height)")
+            self.logger.debug("Image prepared for vectorization: size \(resizedImage.size.width)x\(resizedImage.size.height)")
         }
         
         do {
@@ -504,7 +646,7 @@ class DatabaseManager {
             let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
             
             if debugVectorization {
-                logger.debug("Vectorization completed in \(timeElapsed) seconds")
+                self.logger.debug("Vectorization completed in \(timeElapsed) seconds")
             }
             
             // Extract embedding from output
@@ -525,7 +667,7 @@ class DatabaseManager {
                 }
                 
                 if hasNaNValues && debugVectorization {
-                    logger.warning("⚠️ NaN values detected in raw embedding and replaced with zeros")
+                    self.logger.warning("⚠️ NaN values detected in raw embedding and replaced with zeros")
                 }
                 
                 // Normalize the embedding
@@ -535,20 +677,20 @@ class DatabaseManager {
                 let containsNaN = normalizedEmbedding.contains { $0.isNaN || !$0.isFinite }
                 if containsNaN {
                     if debugVectorization {
-                        logger.error("❌ Normalized embedding contains NaN or infinite values")
+                        self.logger.error("❌ Normalized embedding contains NaN or infinite values")
                     }
                     // Return a zero vector instead
                     return [Float](repeating: 0, count: count)
                 }
                 
                 if debugVectorization {
-                    logger.info("✅ Successfully generated image vector with dimension \(normalizedEmbedding.count)")
+                    self.logger.info("✅ Successfully generated image vector with dimension \(normalizedEmbedding.count)")
                 }
                 
                 return normalizedEmbedding
             }
         } catch {
-            logger.error("❌ Error generating CLIP embedding: \(error.localizedDescription)")
+            self.logger.error("❌ Error generating CLIP embedding: \(error.localizedDescription)")
         }
         
         return nil
@@ -556,11 +698,11 @@ class DatabaseManager {
     
     private func generateTextEmbedding(for text: String) -> [Float]? {
         if debugVectorization {
-            logger.info("📝 Generating vector embedding for text: \"\(text)\"")
+            self.logger.info("📝 Generating vector embedding for text: \"\(text)\"")
         }
         
-        guard let textEncoder = textEncoder else {
-            logger.error("❌ Text encoder model not available")
+        guard let textEncoder = self.textEncoder else {
+            self.logger.error("❌ Text encoder model not available")
             return nil
         }
         
@@ -569,7 +711,7 @@ class DatabaseManager {
             let tokens = tokenizeText(text)
             
             if debugVectorization {
-                logger.debug("Text tokenized with \(tokens.count) tokens")
+                self.logger.debug("Text tokenized with \(tokens.count) tokens")
             }
             
             // Create a multi-array for the tokens
@@ -591,12 +733,12 @@ class DatabaseManager {
             let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
             
             if debugVectorization {
-                logger.debug("Text vectorization completed in \(timeElapsed) seconds")
+                self.logger.debug("Text vectorization completed in \(timeElapsed) seconds")
                 
                 // Log available output feature names for debugging
                 let featureNames = output.featureNames
                 if !featureNames.isEmpty {
-                    logger.debug("Available output features: \(featureNames)")
+                    self.logger.debug("Available output features: \(featureNames)")
                 }
             }
             
@@ -618,7 +760,7 @@ class DatabaseManager {
                 }
                 
                 if hasNaNValues && debugVectorization {
-                    logger.warning("⚠️ NaN values detected in raw text embedding and replaced with zeros")
+                    self.logger.warning("⚠️ NaN values detected in raw text embedding and replaced with zeros")
                 }
                 
                 // Normalize the embedding
@@ -628,20 +770,20 @@ class DatabaseManager {
                 let containsNaN = normalizedEmbedding.contains { $0.isNaN || !$0.isFinite }
                 if containsNaN {
                     if debugVectorization {
-                        logger.error("❌ Normalized text embedding contains NaN or infinite values")
+                        self.logger.error("❌ Normalized text embedding contains NaN or infinite values")
                     }
                     // Return a zero vector instead
                     return [Float](repeating: 0, count: count)
                 }
                 
                 if debugVectorization {
-                    logger.info("✅ Successfully generated text vector with dimension \(normalizedEmbedding.count)")
+                    self.logger.info("✅ Successfully generated text vector with dimension \(normalizedEmbedding.count)")
                 }
                 
                 return normalizedEmbedding
             }
         } catch {
-            logger.error("❌ Error generating text embedding: \(error.localizedDescription)")
+            self.logger.error("❌ Error generating text embedding: \(error.localizedDescription)")
         }
         
         return nil
@@ -657,7 +799,7 @@ class DatabaseManager {
            let vocabData = try? Data(contentsOf: vocabURL) {
             vocab = try? JSONSerialization.jsonObject(with: vocabData) as? [String: Int]
             if vocab != nil {
-                logger.info("✅ Loaded vocabulary file from bundle resources")
+                self.logger.info("✅ Loaded vocabulary file from bundle resources")
             }
         }
         
@@ -713,7 +855,7 @@ class DatabaseManager {
                         if let loadedVocab = loadedVocab {
                             vocab = loadedVocab
                             print("Successfully parsed vocab with \(loadedVocab.count) entries")
-                            logger.info("✅ Loaded vocabulary file from: \(vocabPath.path)")
+                            self.logger.info("✅ Loaded vocabulary file from: \(vocabPath.path)")
                             break
                         } else {
                             print("Failed to parse vocab.json as [String: Int] dictionary")
@@ -727,7 +869,7 @@ class DatabaseManager {
         
         // If vocabulary still couldn't be loaded, use default tokens
         guard let vocab = vocab else {
-            logger.error("❌ Failed to load vocabulary file from all attempted locations")
+            self.logger.error("❌ Failed to load vocabulary file from all attempted locations")
             return defaultTokens()
         }
         
@@ -766,7 +908,7 @@ class DatabaseManager {
         tokens[76] = 49407 // End token for CLIP
         
         if debugVectorization {
-            logger.debug("Tokenized '\(text)' into \(tokenIndex) tokens")
+            self.logger.debug("Tokenized '\(text)' into \(tokenIndex) tokens")
         }
         
         return tokens
@@ -844,7 +986,7 @@ class DatabaseManager {
     private func cosineSimilarity(_ a: [Float], _ b: [Float]) -> Float {
         guard a.count == b.count && a.count > 0 else { 
             if debugVectorization {
-                logger.error("❌ Vector dimension mismatch: \(a.count) vs \(b.count)")
+                self.logger.error("❌ Vector dimension mismatch: \(a.count) vs \(b.count)")
             }
             return 0 
         }
@@ -868,7 +1010,7 @@ class DatabaseManager {
         
         if magnitudeA == 0 || magnitudeB == 0 || !magnitudeA.isFinite || !magnitudeB.isFinite {
             if debugVectorization {
-                logger.error("❌ Zero or invalid magnitude vector detected")
+                self.logger.error("❌ Zero or invalid magnitude vector detected")
             }
             return 0
         }
@@ -894,7 +1036,7 @@ class DatabaseManager {
         
         if magnitude == 0 || !magnitude.isFinite {
             if debugVectorization {
-                logger.warning("⚠️ Attempted to normalize zero vector or encountered invalid magnitude")
+                self.logger.warning("⚠️ Attempted to normalize zero vector or encountered invalid magnitude")
             }
             // Return a zero vector of the same length instead of the original vector
             return [Float](repeating: 0, count: vector.count)
@@ -920,7 +1062,7 @@ class DatabaseManager {
         let maxValue = vector.max() ?? 0
         
         // Log vector statistics
-        logger.info("📊 \(label) - Stats: count=\(vector.count), mean=\(mean), min=\(minValue), max=\(maxValue)")
+        self.logger.info("📊 \(label) - Stats: count=\(vector.count), mean=\(mean), min=\(minValue), max=\(maxValue)")
         
         // Log a sample of the vector (first 5, middle 5, last 5)
         var sampleLog = "📊 \(label) - Sample values:\n"
@@ -948,7 +1090,7 @@ class DatabaseManager {
             }
         }
         
-        logger.debug("\(sampleLog)")
+        self.logger.debug("\(sampleLog)")
     }
     
     // MARK: - Debug Methods
@@ -970,7 +1112,7 @@ class DatabaseManager {
     
     /// Get vector for a specific barcode (for debugging)
     func getVectorForBarcode(_ barcode: String) -> [Float]? {
-        return imageVectors[barcode]
+        return self.imageVectors[barcode]
     }
     
     // Helper method to safely access file URLs
@@ -989,53 +1131,43 @@ class DatabaseManager {
     /// Get all inventory items from the database
     func getAllInventoryItems() -> [InventoryItem] {
         // Return all inventory items as an array
-        return Array(inventoryItems.values)
+        return Array(self.inventoryItems.values)
     }
     
     /// Add a new inventory item to the database
-    func addInventoryItem(barcode: String, productName: String, productPrice: Double, imageData: Data?,quantityInStock:Int,thumbImage:UIImage?) -> InventoryItem {
-        // Generate embedding for the image if available
-        var embedding: [Float]? = nil
-        if let imageData = imageData {
-            embedding = generateCLIPEmbedding(for: imageData)
-        }
-        
+    func addInventoryItem(barcode: String, productName: String, productPrice: Double, imageData: Data?, quantityInStock: Int, thumbImage: UIImage?) -> InventoryItem {
         // Create a new inventory item
-        let inventoryItem = InventoryItem(
+        let newItem = InventoryItem(
             barcode: barcode,
             productName: productName,
             productPrice: productPrice,
             imageData: imageData,
-            embedding: embedding,
-            quantityInStock:quantityInStock,
+            recordID: nil,
+            embedding: nil,
+            quantityInStock: quantityInStock,
             thumbImage: thumbImage
         )
         
-        // Store the item in our dictionary
-        inventoryItems[barcode] = inventoryItem
+        // Save the item using our new method
+        saveItem(item: newItem) { _ in }
         
-        // Store the embedding if available
-        if let embedding = embedding {
-            imageVectors[barcode] = embedding
-        }
-        
-        print("Added new item: \(productName) with barcode: \(barcode)")
-        return inventoryItem
+        // Return the item for backward compatibility
+        return newItem
     }
     
     /// Delete an inventory item from the database
     func deleteInventoryItem(barcode: String) -> Bool {
         // Check if the item exists
-        guard inventoryItems[barcode] != nil else {
+        guard self.inventoryItems[barcode] != nil else {
             print("Failed to delete item: Item with barcode \(barcode) not found")
             return false
         }
         
         // Remove the item from our dictionary
-        inventoryItems.removeValue(forKey: barcode)
+        self.inventoryItems.removeValue(forKey: barcode)
         
         // Remove the embedding if it exists
-        imageVectors.removeValue(forKey: barcode)
+        self.imageVectors.removeValue(forKey: barcode)
         
         print("Deleted item with barcode: \(barcode)")
         return true
@@ -1044,7 +1176,7 @@ class DatabaseManager {
     /// Update an existing inventory item in the database
     func updateInventoryItem(barcode: String, productName: String, productPrice: Double, imageData: Data?) -> InventoryItem? {
         // Check if the item exists
-        guard inventoryItems[barcode] != nil else {
+        guard self.inventoryItems[barcode] != nil else {
             print("Failed to update item: Item with barcode \(barcode) not found")
             return nil
         }
@@ -1067,11 +1199,11 @@ class DatabaseManager {
         )
         
         // Store the updated item in our dictionary
-        inventoryItems[barcode] = updatedItem
+        self.inventoryItems[barcode] = updatedItem
         
         // Store the embedding if available
         if let embedding = embedding {
-            imageVectors[barcode] = embedding
+            self.imageVectors[barcode] = embedding
         }
         
         print("Updated item: \(productName) with barcode: \(barcode)")
@@ -1087,7 +1219,7 @@ class DatabaseManager {
         }
         
         // If we have no vectors to compare against, return random items
-        if imageVectors.isEmpty {
+        if self.imageVectors.isEmpty {
             print("No image vectors available, returning random items instead")
             return getRandomItems(limit: limit)
         }
@@ -1095,7 +1227,7 @@ class DatabaseManager {
         // Calculate similarity scores for all items
         var similarityScores: [(barcode: String, score: Float)] = []
         
-        for (barcode, vector) in imageVectors {
+        for (barcode, vector) in self.imageVectors {
             let similarity = cosineSimilarity(queryEmbedding, vector)
             similarityScores.append((barcode: barcode, score: similarity))
         }
@@ -1109,7 +1241,7 @@ class DatabaseManager {
         // Convert to inventory items
         var result: [InventoryItem] = []
         for (barcode, score) in topResults {
-            if var item = inventoryItems[barcode] {
+            if var item = self.inventoryItems[barcode] {
                 item.score = Double(score)
                 result.append(item)
                 
@@ -1137,7 +1269,7 @@ class DatabaseManager {
         }
         
         // If we have no vectors to compare against, return random items 如果没有可供比较的向量，则返回随机元素
-        if imageVectors.isEmpty {
+        if self.imageVectors.isEmpty {
             print("No image vectors available, returning random items instead")
             return getRandomItems(limit: limit)
         }
@@ -1145,8 +1277,8 @@ class DatabaseManager {
         // Calculate similarity scores for all items 计算所有物品的相似度得分
         var similarityScores: [(barcode: String, score: Float)] = []
         
-        print(imageVectors.count)
-        for (barcode, vector) in imageVectors {
+        print(self.imageVectors.count)
+        for (barcode, vector) in self.imageVectors {
             let similarity = cosineSimilarity(queryEmbedding, vector)
             similarityScores.append((barcode: barcode, score: similarity))
         }
@@ -1160,7 +1292,7 @@ class DatabaseManager {
         // Convert to inventory items  转换为库存物品
         var result: [InventoryItem] = []
         for (barcode, score) in topResults {
-            if var item = inventoryItems[barcode] {
+            if var item = self.inventoryItems[barcode] {
                 item.score = Double(score)
                 result.append(item)
                 
@@ -1181,7 +1313,7 @@ class DatabaseManager {
     
     /// Helper method to get random items when vector search fails
     private func getRandomItems(limit: Int) -> [InventoryItem] {
-        let allItems = Array(inventoryItems.values)
+        let allItems = Array(self.inventoryItems.values)
         
         // If we have no items at all, return an empty array
         if allItems.isEmpty {

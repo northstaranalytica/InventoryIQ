@@ -14,12 +14,13 @@ import Speech
 class MyStuffVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource {
 
 //    private let databaseManager = DatabaseManager.shared
-    @Published var lastQueryVector: [Float]?
-    @Published var lastQueryType: String = ""
-    @Published var similarItems: [InventoryItem] = []
-    var isUpdate: Bool = true
+    var similarItems: [InventoryItem] = []
     var searchImage: UIImage?
     var searchText: String = ""
+    
+    // For technical diagnostics
+    var lastQueryVector: [Float]?
+    var lastQueryType: String = ""
 
     
     private lazy var tableView: UITableView = {
@@ -77,29 +78,13 @@ class MyStuffVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.updateInventory()
+        // No need to call updateInventory as all data is now stored locally
+        // and search functions will access local storage directly
     }
     
     
-    func updateInventory(){
-        if(isUpdate){
-            ProgressTools.showLoading("Updating inventory...", self.view)
-            CloudKitManager.shared.fetchProducts { [weak self] records in
-                guard let self = self else {
-                    ProgressTools.hide(nil)
-                    return
-                }
-                
-                let allData:[LocalInventory] = records
-                for good in allData{
-                    let imageData = good.thumbImage?.jpegData(compressionQuality: 0.8)
-                    DatabaseManager.shared.addInventoryItem(barcode: good.barCode, productName: good.productName, productPrice: good.price, imageData: imageData,quantityInStock: good.quantityInStock, thumbImage: good.thumbImage)
-                }
-                ProgressTools.hide(self.view)
-                self.isUpdate = false
-            }
-        }
-    }
+    // No longer needed as we're using local storage directly
+    // func updateInventory() { ... }
 
     
     

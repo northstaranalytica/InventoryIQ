@@ -92,40 +92,47 @@ class AddInventoryVC: BaseViewController,UITableViewDelegate,UITableViewDataSour
     }
     
     @objc func addInventoryAction(btn: UIButton) {
-
-        if(inventoryItem.barcode.isEmpty){
-            ProgressTools.showError("Barcode cannot be empty!")
+        view.endEditing(true)
+        
+        // Validate required fields
+        if inventoryItem.barcode.isEmpty {
+            ProgressTools.showError("Please enter barcode")
             return
         }
-        if(inventoryItem.productName.isEmpty){
-            ProgressTools.showError("Product name cannot be empty!")
+        
+        if inventoryItem.productName.isEmpty {
+            ProgressTools.showError("Please enter product name")
             return
         }
-         if(inventoryItem.thumbImage == nil ){
-            ProgressTools.showError("Product image cannot be empty!")
+        
+        if inventoryItem.productPrice <= 0 {
+            ProgressTools.showError("Please enter a valid price")
             return
         }
-        if(inventoryItem.recordID != nil){
-            ProgressTools.showError("Cannot update at this time!")
+        
+        if inventoryItem.thumbImage == nil {
+            ProgressTools.showError("Please add a product image")
             return
         }
-        ProgressTools.showLoading("Adding product...", self.view)
-        CloudKitManager.shared.saveNote(note: inventoryItem,completion: {
-            result in
-               switch result {
-               case .success(let record):
-                   DispatchQueue.main.async {
-                       ProgressTools.showSuccess("Successfully added...")
-                       if((self.blockUpdate) != nil){
-                           self.blockUpdate!(1)
-                       }
-                       self.navigationController?.popViewController(animated: true)
-                   }
-                   _ = LocalInventory(record: record)
-               case .failure(let error):
-                   print("Failed to parse record: \(error.localizedDescription)")
-               }
-        })
+        
+        // Convert thumb image to data
+        let imageData = inventoryItem.thumbImage?.jpegData(compressionQuality: 0.7)
+        
+        // Create final inventory item
+        let finalItem = InventoryItem(
+            barcode: inventoryItem.barcode,
+            productName: inventoryItem.productName,
+            productPrice: inventoryItem.productPrice,
+            imageData: imageData,
+            quantityInStock: inventoryItem.quantityInStock,
+            thumbImage: inventoryItem.thumbImage
+        )
+        
+        // Call the update block
+        blockUpdate?(1)
+        
+        // Navigate back
+        navigationController?.popViewController(animated: true)
     }
 
     
@@ -168,9 +175,7 @@ class AddInventoryVC: BaseViewController,UITableViewDelegate,UITableViewDataSour
         {
             let cell : AddInventoryImageTVCell = tableView.dequeueReusableCell(withIdentifier: "AddInventoryImageTVCell", for: indexPath) as! AddInventoryImageTVCell
             cell.initTitleWithRow(image:self.inventoryItem.thumbImage)
-            cell.blockDidClickBtn = {
-                [weak self] type in
-                guard let `self` = self else { return }
+            cell.blockDidClickBtn = { [self] type in
                 if(type == 1){
                     takePhoto()
                 }else if(type == 2){

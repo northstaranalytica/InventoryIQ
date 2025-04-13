@@ -8,6 +8,7 @@
 import UIKit
 import RxSwift
 import MobileCoreServices
+import CloudKit
 
 class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
 
@@ -202,85 +203,81 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if self.allInventory.isEmpty {
-            updateInventory()
+            fetchItems()
         }
     }
     
-    func updateInventory() {
-        ProgressTools.showLoading("Updating inventory...", self.view)
-        CloudKitManager.shared.fetchProducts { [weak self] records in
-            guard let self = self else {
-                ProgressTools.hide(nil)
-                return
-            }
-            
-            if records.isEmpty {
+    func fetchItems() {
+        ProgressTools.showLoading("Loading items...", self.view)
+        
+        // Load items from local storage
+        DatabaseManager.shared.getAllItems { items in
+            DispatchQueue.main.async {
+                self.allInventory = items
+                self.updateFilteredInventory()
+                self.tableView.reloadData()
                 ProgressTools.hide(self.view)
-                if self.allInventory.isEmpty {
-                    self.allInventory = []
-                    self.filteredInventory = []
-                    self.tableView.reloadData()
+                
+                if items.isEmpty {
+                    // Show an add items prompt if there are no items
+                    self.showEmptyStatePrompt()
                 }
-                return
             }
-            
-            let allData: [LocalInventory] = records
-            var tempData: [InventoryItem] = []
-            for good in allData {
-                let imageData = good.thumbImage?.jpegData(compressionQuality: 0.8)
-                let item = InventoryItem(
-                    barcode: good.barCode,
-                    productName: good.productName,
-                    productPrice: good.price,
-                    imageData: imageData,
-                    recordID: good.id,
-                    quantityInStock: good.quantityInStock,
-                    thumbImage: good.thumbImage
-                )
-                tempData.append(item)
-            }
-            
-            ProgressTools.hide(self.view)
-            self.allInventory = tempData
-            self.updateFilteredInventory()
-            self.tableView.reloadData()
         }
     }
     
-    func updateFilteredInventory() {
-        // Apply search filter
-        if searchText.isEmpty {
-            filteredInventory = allInventory
-        } else {
-            filteredInventory = allInventory.filter { item in
-                return item.productName.lowercased().contains(searchText.lowercased()) ||
-                       item.barcode.lowercased().contains(searchText.lowercased())
+    func showEmptyStatePrompt() {
+        // Create and show an alert to guide the user on adding items
+        let alert = UIAlertController(
+            title: "No Items Found",
+            message: "Your inventory is empty. Add your first item by tapping the + button.",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        
+        self.present(alert, animated: true)
+    }
+    
+    private func updateFilteredInventory() {
+        self.filteredInventory = allInventory.filter { item in
+            if searchText.isEmpty {
+                return true
             }
+            return item.productName.lowercased().contains(searchText.lowercased()) || item.barcode.lowercased().contains(searchText.lowercased())
         }
         
-        // Apply sorting
         switch sortOption {
         case .nameAsc:
-            filteredInventory.sort { $0.productName < $1.productName }
+            self.filteredInventory.sort { $0.productName < $1.productName }
         case .nameDesc:
-            filteredInventory.sort { $0.productName > $1.productName }
+            self.filteredInventory.sort { $0.productName > $1.productName }
         case .priceAsc:
-            filteredInventory.sort { $0.productPrice < $1.productPrice }
+            self.filteredInventory.sort { $0.productPrice < $1.productPrice }
         case .priceDesc:
-            filteredInventory.sort { $0.productPrice > $1.productPrice }
+            self.filteredInventory.sort { $0.productPrice > $1.productPrice }
         }
+        
+        // Show empty state if needed
+        if self.filteredInventory.isEmpty {
+            self.tableView.setViewState(state: .CT_empty, title: "No inventory items found")
+        } else {
+            self.tableView.setViewState(state: .CT_normal)
+        }
+        
+        self.tableView.reloadData()
     }
     
     @objc func addNewItem() {
         // Show action sheet for taking photo or choosing from gallery
         let actionSheet = UIAlertController(title: "Add New Item", message: "Take a photo of the item", preferredStyle: .actionSheet)
         
-        let takePhotoAction = UIAlertAction(title: "Take Photo", style: .default) { [weak self] _ in
-            self?.choicePhotoTools.takePhoto(controller: self!)
+        let takePhotoAction = UIAlertAction(title: "Take Photo", style: .default) { [self] _ in
+            self.choicePhotoTools.takePhoto(controller: self)
         }
         
-        let choosePhotoAction = UIAlertAction(title: "Choose from Gallery", style: .default) { [weak self] _ in
-            self?.choicePhotoTools.choicePhoto(controller: self!)
+        let choosePhotoAction = UIAlertAction(title: "Choose from Gallery", style: .default) { [self] _ in
+            self.choicePhotoTools.choicePhoto(controller: self)
         }
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
@@ -299,36 +296,21 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
         self.updateFilteredInventory()
         self.tableView.reloadData()
         
-        // Then attempt to save to CloudKit
+        // Save to local storage
         ProgressTools.showLoading("Adding item...", self.view)
         
-        CloudKitManager.shared.saveNote(note: item) { result in
+        DatabaseManager.shared.saveItem(item: item) { result in
             DispatchQueue.main.async {
                 // Always hide loading first
                 ProgressTools.hide(self.view)
                 
                 switch result {
-                case .success(let record):
+                case .success(_):
                     // Show success message
                     ProgressTools.showSuccess("Item added successfully")
-                    print("Successfully added item with ID: \(record.recordID.recordName)")
                     
                 case .failure(let error):
-                    // Check for specific CloudKit errors
-                    let errorMessage: String
-                    
-                    if error.localizedDescription.contains("recordName") {
-                        errorMessage = "Item saved locally only (CloudKit schema issue)"
-                        print("CloudKit schema error: \(error)")
-                    } else if error.localizedDescription.contains("reserved key") {
-                        errorMessage = "Item saved locally only (CloudKit reserved key issue)"
-                        print("CloudKit reserved key error: \(error)")
-                    } else {
-                        errorMessage = "Item saved locally only"
-                        print("CloudKit error: \(error)")
-                    }
-                    
-                    ProgressTools.showError(errorMessage)
+                    ProgressTools.showError("Failed to save item: \(error.localizedDescription)")
                 }
             }
         }
@@ -354,5 +336,165 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        
+        // Get the selected item
+        let item = filteredInventory[indexPath.row]
+        
+        // Create edit form
+        let editItemVC = UIAlertController(title: "Edit Item", message: "Update item details", preferredStyle: .alert)
+        
+        editItemVC.addTextField { textField in
+            textField.placeholder = "Product Name"
+            textField.text = item.productName
+        }
+        
+        editItemVC.addTextField { textField in
+            textField.placeholder = "Price"
+            textField.keyboardType = .decimalPad
+            textField.text = String(item.productPrice)
+        }
+        
+        editItemVC.addTextField { textField in
+            textField.placeholder = "Quantity"
+            textField.keyboardType = .numberPad
+            textField.text = String(item.quantityInStock)
+        }
+        
+        let saveAction = UIAlertAction(title: "Save", style: .default) { [self] _ in
+            guard let nameField = editItemVC.textFields?[0],
+                  let priceField = editItemVC.textFields?[1],
+                  let quantityField = editItemVC.textFields?[2],
+                  let name = nameField.text, !name.isEmpty,
+                  let priceText = priceField.text, !priceText.isEmpty,
+                  let price = Double(priceText),
+                  let quantityText = quantityField.text, !quantityText.isEmpty,
+                  let quantity = Int(quantityText) else {
+                ProgressTools.showError("Please fill all fields with valid data")
+                return
+            }
+            
+            // Create updated item
+            let updatedItem = InventoryItem(
+                barcode: item.barcode,
+                productName: name,
+                productPrice: price,
+                imageData: item.imageData,
+                recordID: item.recordID,
+                quantityInStock: quantity,
+                thumbImage: item.thumbImage
+            )
+            
+            // Update in local array first
+            if let index = self.allInventory.firstIndex(where: { $0.barcode == item.barcode }) {
+                self.allInventory[index] = updatedItem
+                self.updateFilteredInventory()
+                self.tableView.reloadData()
+            }
+            
+            // Only update in CloudKit if the item has a recordID
+            if let _ = item.recordID {
+                self.updateItemInCloudKit(updatedItem)
+            } else {
+                ProgressTools.showSuccess("Item updated locally")
+            }
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        
+        editItemVC.addAction(saveAction)
+        editItemVC.addAction(cancelAction)
+        
+        present(editItemVC, animated: true)
+    }
+    
+    // MARK: - Swipe to Delete
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        // Only allow actions for inventory items, not add item cell
+        guard indexPath.section == 1 && tableView == self.tableView && indexPath.row < filteredInventory.count else {
+            return nil
+        }
+        
+        let item = filteredInventory[indexPath.row]
+        
+        // Create delete action
+        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [self] (_, _, completionHandler) in
+            // Show confirmation alert
+            let alert = UIAlertController(title: "Delete Item", message: "Are you sure you want to delete this item?", preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                completionHandler(false)
+            })
+            
+            alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { [self] _ in
+                // Remove item from UI immediately
+                self.filteredInventory.remove(at: indexPath.row)
+                tableView.deleteRows(at: [indexPath], with: .automatic)
+                
+                // Then delete from storage using barcode
+                self.deleteItem(barcode: item.barcode)
+                
+                completionHandler(true)
+            })
+            
+            self.present(alert, animated: true)
+        }
+        
+        // Create edit action
+        let editAction = UIContextualAction(style: .normal, title: "Edit") { [self] (_, _, completionHandler) in
+            // Simulate a tap on the row to bring up the edit form
+            self.tableView(tableView, didSelectRowAt: indexPath)
+            
+            completionHandler(true)
+        }
+        
+        // Add image to actions (SF Symbols)
+        deleteAction.image = UIImage(systemName: "trash")
+        editAction.image = UIImage(systemName: "pencil")
+        editAction.backgroundColor = .systemBlue
+        
+        // Create and return configuration
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction])
+        return configuration
+    }
+    
+    // MARK: - CloudKit Operations
+    
+    func updateItemInCloudKit(_ item: InventoryItem) {
+        ProgressTools.showLoading("Updating item...", self.view)
+        
+        DatabaseManager.shared.updateItem(item: item) { result in
+            DispatchQueue.main.async {
+                ProgressTools.hide(self.view)
+                
+                switch result {
+                case .success(_):
+                    ProgressTools.showSuccess("Item updated successfully")
+                case .failure(let error):
+                    ProgressTools.showError("Failed to update item: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
+    // Additional method to delete item by barcode
+    func deleteItem(barcode: String) {
+        // First remove from local array for immediate UI update
+        if let index = allInventory.firstIndex(where: { $0.barcode == barcode }) {
+            allInventory.remove(at: index)
+            updateFilteredInventory()
+            tableView.reloadData()
+        }
+        
+        // Then delete from storage
+        DatabaseManager.shared.deleteItem(barcode: barcode) { success in
+            DispatchQueue.main.async {
+                if success {
+                    ProgressTools.showSuccess("Item deleted successfully")
+                } else {
+                    ProgressTools.showError("Failed to delete item")
+                }
+            }
+        }
     }
 } 

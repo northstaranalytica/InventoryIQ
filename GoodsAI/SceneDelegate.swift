@@ -22,8 +22,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         guard let windowScene = (scene as? UIWindowScene) else { return }
         IQKeyboardManager.shared.isEnabled = true
-        IQKeyboardManager.shared.enableAutoToolbar = true // 自定义工具条的完成按钮文本
-        DatabaseManager.shared
+        IQKeyboardManager.shared.enableAutoToolbar = false
+        
+        _ = DatabaseManager.shared
         
         window = UIWindow(windowScene: windowScene)
 //        let homeVc = MainTabBarController()
