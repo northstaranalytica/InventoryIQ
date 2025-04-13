@@ -407,6 +407,10 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
         present(editItemVC, animated: true)
     }
     
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 84 // Based on cell layout constraints (60px image height + 12px top padding + 12px bottom padding)
+    }
+    
     // MARK: - Swipe to Delete
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
