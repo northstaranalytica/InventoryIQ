@@ -78,8 +78,9 @@ class MyStuffVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        // No need to call updateInventory as all data is now stored locally
-        // and search functions will access local storage directly
+        // Reset search results to ensure fresh data is used in searches
+        self.similarItems.removeAll()
+        self.tableView.reloadData()
     }
     
     

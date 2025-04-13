@@ -161,6 +161,11 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
         }
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        loadInventory()  // Reload inventory data each time the view appears
+    }
+    
     
     func loadInventory() {
         ProgressTools.showLoading("Loading inventory...", self.view)

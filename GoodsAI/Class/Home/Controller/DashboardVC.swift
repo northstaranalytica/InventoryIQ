@@ -202,9 +202,7 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if self.allInventory.isEmpty {
-            fetchItems()
-        }
+        fetchItems()  // Always refresh inventory data when view appears
     }
     
     func fetchItems() {
@@ -497,7 +495,17 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
             if let _ = item.recordID {
                 self.updateItemInCloudKit(updatedItem)
             } else {
-                ProgressTools.showSuccess("Quantity updated locally")
+                // Use DatabaseManager for local update too - ensure persistence
+                DatabaseManager.shared.updateItem(item: updatedItem) { result in
+                    DispatchQueue.main.async {
+                        switch result {
+                        case .success(_):
+                            ProgressTools.showSuccess("Quantity updated locally")
+                        case .failure(let error):
+                            ProgressTools.showError("Failed to update item: \(error.localizedDescription)")
+                        }
+                    }
+                }
             }
             
             completionHandler(true)
@@ -530,7 +538,17 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
             if let _ = item.recordID {
                 self.updateItemInCloudKit(updatedItem)
             } else {
-                ProgressTools.showSuccess("Quantity updated locally")
+                // Use DatabaseManager for local update too - ensure persistence
+                DatabaseManager.shared.updateItem(item: updatedItem) { result in
+                    DispatchQueue.main.async {
+                        switch result {
+                        case .success(_):
+                            ProgressTools.showSuccess("Quantity updated locally")
+                        case .failure(let error):
+                            ProgressTools.showError("Failed to update item: \(error.localizedDescription)")
+                        }
+                    }
+                }
             }
             
             completionHandler(true)
