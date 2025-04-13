@@ -83,8 +83,13 @@ class MyStuffVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource {
     
     func updateInventory(){
         if(isUpdate){
-            ProgressTools.showLoading("正在更新库存...", self.view)
-            CloudKitManager.shared.fetchProducts { records in
+            ProgressTools.showLoading("Updating inventory...", self.view)
+            CloudKitManager.shared.fetchProducts { [weak self] records in
+                guard let self = self else {
+                    ProgressTools.hide(nil)
+                    return
+                }
+                
                 let allData:[LocalInventory] = records
                 for good in allData{
                     let imageData = good.thumbImage?.jpegData(compressionQuality: 0.8)
@@ -104,22 +109,22 @@ class MyStuffVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource {
         
         let query = self.searchText
         if(self.searchText.isEmpty){
-            ProgressTools.showError("搜索内容不能为空！")
+            ProgressTools.showError("Search content cannot be empty!")
             return
         }
-        ProgressTools.showLoading("正在搜索...", self.view)
+        ProgressTools.showLoading("Searching...", self.view)
         self.similarItems.removeAll()
         self.tableView.reloadData()
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
-            // Store the query vector for debugging 存储查询向量用于调试
+            // Store the query vector for debugging
             if let queryEmbedding = DatabaseManager.shared.generateTextEmbeddingForDebug(for: query) {
                 DispatchQueue.main.async {
                     self.lastQueryVector = queryEmbedding
                     self.lastQueryType = "Text Query: \"\(query)\""
                 }
             }
-            // 使用文本查询查找相似物品
+            // Find similar items using text query
             let items = DatabaseManager.shared.findSimilarItemsByText(query: query, limit: 5)
             DispatchQueue.main.async {
                 self.similarItems = items
@@ -137,14 +142,14 @@ class MyStuffVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource {
     // Find similar items to the given image
     func findSimilarItems() {
         if(self.searchImage == nil){
-            ProgressTools.showError("搜索图片不能为空！")
+            ProgressTools.showError("Search image cannot be empty!")
             return
         }
         guard let imageData = self.searchImage!.jpegData(compressionQuality: 0.8) else {
-            ProgressTools.showError("图片错误！")
+            ProgressTools.showError("Image error!")
             return
         }
-        ProgressTools.showLoading("正在搜索...", self.view)
+        ProgressTools.showLoading("Searching...", self.view)
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
             // Store the query vector for debugging
@@ -216,13 +221,13 @@ class MyStuffVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource {
         let label = UILabel(frame: CGRect(x: 20, y: 14, width: kScreenWidth-80, height: 16))
         label.textColor = UIColor.cColor_text_333
         label.font = UIFont.systemFont(ofSize: 14,weight: UIFont.Weight.semibold)
-        label.text = "搜索结果"
+        label.text = "Search Results"
 
         if(section == 0){
-            label.text = "按照描述搜索"
+            label.text = "Search by Description"
         }
         else if( section == 1){
-            label.text = "查找类似物品"
+            label.text = "Find Similar Items"
         }
 
         view.addSubview(centerVIew)

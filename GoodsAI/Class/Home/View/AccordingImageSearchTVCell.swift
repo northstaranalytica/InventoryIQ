@@ -9,7 +9,7 @@ import UIKit
 
 class AccordingImageSearchTVCell: UITableViewCell {
 
-    // 0 相机   1相册  2查找
+    // 0 camera   1 gallery  2 search
     var blockAction:((Int)->())?
 
     override func awakeFromNib() {
@@ -110,7 +110,7 @@ class AccordingImageSearchTVCell: UITableViewCell {
 
     private lazy var cameraImageBtn: UIButton = {
         let btn = UIButton()
-        btn.setTitle("拍照", for: .normal)
+        btn.setTitle("Camera", for: .normal)
         btn.setImage(UIImage(systemName: "camera"), for: .normal)
         btn.setTitleColor(.white, for: .normal)
         btn.titleLabel?.font = UIFont.systemFont(ofSize: 14)
@@ -124,7 +124,7 @@ class AccordingImageSearchTVCell: UITableViewCell {
     
     private lazy var photoImageBtn: UIButton = {
         let btn = UIButton()
-        btn.setTitle("相册", for: .normal)
+        btn.setTitle("Gallery", for: .normal)
         btn.setImage(UIImage(systemName: "photo.on.rectangle"), for: .normal)
         btn.setTitleColor(.white, for: .normal)
         btn.titleLabel?.font = UIFont.systemFont(ofSize: 14)
@@ -149,7 +149,7 @@ class AccordingImageSearchTVCell: UITableViewCell {
         let btn = UIButton()
         btn.setImage(UIImage(systemName: "magnifyingglass"), for: .normal)
         btn.setTitleColor(.white, for: .normal)
-        btn.setTitle("查找类似", for: .normal)
+        btn.setTitle("Find Similar", for: .normal)
         btn.titleLabel?.font = UIFont.systemFont(ofSize: 14)
         btn.backgroundColor = .cColor_other_7C79F4
         btn.tintColor = .white

@@ -28,7 +28,7 @@ class AddInventoryImageTVCell: UITableViewCell {
     
     private lazy var titleLable: UILabel = {
         let label = UILabel()
-        label.text = "产品图片"
+        label.text = "Product Image"
         label.textAlignment = NSTextAlignment.left
         label.textColor = UIColor.cColor_text_333
         label.font = UIFont.systemFont(ofSize: 14,weight: UIFont.Weight.regular)

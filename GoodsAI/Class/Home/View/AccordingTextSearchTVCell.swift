@@ -11,7 +11,7 @@ import RxSwift
 class AccordingTextSearchTVCell: UITableViewCell {
     private let disposeBag = DisposeBag()
     var blockInputText:((String)->())?
-    // 0 点击搜索   1录音  2 语音结束
+    // 0 search click   1 recording  2 voice end
     var blockActiont:((Int)->())?
 
     override func awakeFromNib() {
@@ -70,7 +70,7 @@ class AccordingTextSearchTVCell: UITableViewCell {
     }
 
     
-    // MARK: - 事件处理
+    // MARK: - Event Handling
 
     func updateText(text:String){
         self.contentTextFiled.text = text;
@@ -103,7 +103,7 @@ class AccordingTextSearchTVCell: UITableViewCell {
     
     
     
-    // 背景
+    // Background
     lazy var textBgView: UIView = {
         let view = UIView()
         view.backgroundColor = .cColor_F3F3F3
@@ -112,7 +112,7 @@ class AccordingTextSearchTVCell: UITableViewCell {
     
     private lazy var contentTextFiled: UITextField = {
         let textFiled = UITextField()
-        textFiled.placeholder = "描述你要找什么..."
+        textFiled.placeholder = "Describe what you're looking for..."
         textFiled.textAlignment = NSTextAlignment.left
         textFiled.textColor = UIColor.cColor_text_333
         textFiled.font = UIFont.systemFont(ofSize: 14,weight: UIFont.Weight.regular)
@@ -142,8 +142,8 @@ class AccordingTextSearchTVCell: UITableViewCell {
 
         
         btn.setTitleColor(.white, for: .normal)
-        btn.setTitle("长按语音搜索", for: .normal)
-        btn.setTitle("正在录音...", for: .highlighted)
+        btn.setTitle("Press and hold to search by voice", for: .normal)
+        btn.setTitle("Recording...", for: .highlighted)
 
         btn.titleLabel?.font = UIFont.systemFont(ofSize: 14,weight: UIFont.Weight.regular)
         btn.tintColor = .white

@@ -18,7 +18,7 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
     var searchText:String = ""
     var sortOption = SortOption.nameAsc
 
-    // 背景
+    // Background
     lazy var searchBgView: UIView = {
         let view = UIView()
         view.backgroundColor = .cColor_F3F3F3
@@ -27,7 +27,7 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
     
     private lazy var contentTextFiled: UITextField = {
         let textFiled = UITextField()
-        textFiled.placeholder = "搜索库存..."
+        textFiled.placeholder = "Search inventory..."
         textFiled.textAlignment = NSTextAlignment.left
         textFiled.textColor = UIColor.cColor_text_333
         textFiled.font = UIFont.systemFont(ofSize: 14,weight: UIFont.Weight.regular)
@@ -48,22 +48,22 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
         btn.addTarget(self, action: #selector(clickSearchAction), for: .touchUpInside)
         // 创建菜单动作
         let actions = [
-            UIAction(title: "名称（A-Z）") { _ in
+            UIAction(title: "Name (A-Z)") { _ in
                 self.sortOption = SortOption.nameAsc
                 self.tempInventory = self.filteredItems
                 self.tableView.reloadData()
             },
-            UIAction(title: "名称（Z-A）") { _ in
+            UIAction(title: "Name (Z-A)") { _ in
                 self.sortOption = SortOption.nameDesc
                 self.tempInventory = self.filteredItems
                 self.tableView.reloadData()
             },
-            UIAction(title: "价格（低-高）") { _ in
+            UIAction(title: "Price (Low-High)") { _ in
                 self.sortOption = SortOption.priceAsc
                 self.tempInventory = self.filteredItems
                 self.tableView.reloadData()
             },
-            UIAction(title: "价格（高-低）") { _ in
+            UIAction(title: "Price (High-Low)") { _ in
                 self.sortOption = SortOption.priceDesc
                 self.tempInventory = self.filteredItems
                 self.tableView.reloadData()
@@ -71,7 +71,7 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
         ]
         
         // 创建菜单并绑定到按钮
-        btn.menu = UIMenu(title: "操作菜单", children: actions)
+        btn.menu = UIMenu(title: "Sort Menu", children: actions)
         // 设置点击立即显示菜单（默认需要长按）
         btn.showsMenuAsPrimaryAction = true
         return btn
@@ -112,7 +112,7 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = "Inventor"
+        self.title = "Inventory"
         self.setupNavigationItems()
         self.view.addSubview(self.searchBgView)
         self.searchBgView.addSubview(self.tableView)
@@ -161,8 +161,26 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
     
     
     func updateInventory( isUpdateDatabase:Bool){
-        ProgressTools.showLoading("正在更新库存...", self.view)
-        CloudKitManager.shared.fetchProducts { records in
+        ProgressTools.showLoading("Updating inventory...", self.view)
+        CloudKitManager.shared.fetchProducts { [weak self] records in
+            guard let self = self else {
+                ProgressTools.hide(nil)
+                return
+            }
+            
+            // Add a check for empty records
+            if records.isEmpty {
+                // If no records, just hide the spinner and keep the current items
+                ProgressTools.hide(self.view)
+                // If we had no items before, we should at least initialize an empty array
+                if self.allInventory.isEmpty {
+                    self.allInventory = []
+                    self.tempInventory = []
+                    self.tableView.reloadData()
+                }
+                return
+            }
+            
             let allData:[LocalInventory] = records
             var tempData:[InventoryItem] = []
             for good in allData{
@@ -208,7 +226,7 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let filePathURL = urls.first else { return }
-        // 处理选中的文件，例如获取文件内容或显示图片等
+        // Process the selected file, e.g. get file content or display images
         print("Selected file URL: \(filePathURL)")
         GoodsAI.parseCSV(filePath: filePathURL) { items in
             self.uploadInventory(note: items)
@@ -220,7 +238,7 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
     }
         
     func uploadInventory(note:[InventoryItem]){
-        ProgressTools.showLoading("正在导入...",nil)
+        ProgressTools.showLoading("Importing...",nil)
         let manager = FileUploadManager()
         manager.uploadFiles(
             note,
@@ -228,7 +246,7 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
             },
             allComplete: { results in
                 DispatchQueue.main.async {
-                    ProgressTools.showSuccess(String(results.count)+"条数据导入完成")
+                    ProgressTools.showSuccess(String(results.count)+" items imported successfully")
                     self.updateInventory(isUpdateDatabase: true)
                 }
             }
@@ -245,7 +263,7 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
         let label = UILabel(frame: CGRect(x: 20, y: 12, width: kScreenWidth-80, height: 16))
         label.textColor = UIColor.cColor_text_333
         label.font = UIFont.systemFont(ofSize: 14,weight: UIFont.Weight.semibold)
-        label.text = String(self.tempInventory.count)+"个商品"
+        label.text = String(self.tempInventory.count)+" items"
         view.addSubview(label)
         return view
     }
@@ -276,10 +294,10 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
         if editingStyle == .delete {
             
             if(self.allInventory[indexPath.row].recordID != nil){
-                ProgressTools.showLoading("正在删除...",nil)
+                ProgressTools.showLoading("Deleting...",nil)
                 CloudKitManager.shared.deleteRecord(recordID: self.tempInventory[indexPath.row].recordID!) { result in
                     DispatchQueue.main.async {
-                        ProgressTools.showSuccess("删除成功")
+                        ProgressTools.showSuccess("Successfully deleted")
                         self.updateInventory(isUpdateDatabase: true)
                     }
                 }

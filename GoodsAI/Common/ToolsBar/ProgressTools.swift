@@ -12,7 +12,7 @@ import MBProgressHUD
 class ProgressTools {
 
 
-    /// 通用样式配置
+    /// Common style configuration
         private static func setupCommonStyle(hud: MBProgressHUD) {
             hud.contentColor = .white
             hud.bezelView.color = UIColor.black.withAlphaComponent(0.7)
@@ -24,16 +24,16 @@ class ProgressTools {
             
         }
         
-        // MARK: - 获取安全视图
+        // MARK: - Get Safe View
         private static func getSafeView() -> UIView? {
             guard let window = UIApplication.currentKeyWindow else {
-                print("未找到有效窗口")
+                print("No valid window found")
                 return nil
             }
             return window
         }
         
-        // MARK: - 显示加载提示
+        // MARK: - Show Loading Tip
     
     static func showLoading(_ text: String? = nil,_ view:UIView?) {
       
@@ -45,7 +45,7 @@ class ProgressTools {
         setupCommonStyle(hud: hud)
         
         hud.mode = .indeterminate
-        hud.label.text = text ?? "加载中..."
+        hud.label.text = text ?? "Loading..."
         hud.label.font = UIFont.systemFont(ofSize: 14, weight: .medium)
 
 
@@ -53,7 +53,7 @@ class ProgressTools {
         }
         
 
-    // MARK: - 显示成功提示
+    // MARK: - Show Success Tip
     static func showSuccess(_ text: String, delay: TimeInterval = 1.5) {
         hide(nil)
         guard let window = getSafeView() else { return }
@@ -66,7 +66,7 @@ class ProgressTools {
         hud.hide(animated: true, afterDelay: delay)
     }
     
-    // MARK: - 显示错误提示
+    // MARK: - Show Error Tip
     static func showError(_ text: String, delay: TimeInterval = 1.5) {
         hide(nil)
         guard let window = getSafeView() else { return }
@@ -79,7 +79,7 @@ class ProgressTools {
         hud.hide(animated: true, afterDelay: delay)
     }
     
-    // MARK: - 隐藏所有HUD
+    // MARK: - Hide All HUDs
     static func hide(_ view:UIView?) {
         guard var window = getSafeView() else { return }
         if(view != nil){

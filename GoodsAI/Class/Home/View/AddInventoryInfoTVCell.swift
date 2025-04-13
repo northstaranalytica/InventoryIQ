@@ -37,7 +37,7 @@ class AddInventoryInfoTVCell: UITableViewCell {
     
     private lazy var titleLable: UILabel = {
         let label = UILabel()
-        label.text = "工单类型"
+        label.text = "Order Type"
         label.textAlignment = NSTextAlignment.left
         label.textColor = UIColor.cColor_text_333
         label.font = UIFont.systemFont(ofSize: 14,weight: UIFont.Weight.regular)
@@ -122,27 +122,27 @@ class AddInventoryInfoTVCell: UITableViewCell {
         
 
         if(row == 0 ){
-            self.titleLable.text = "条形码"
+            self.titleLable.text = "Barcode"
             self.contentTextFiled.placeholder = "Barcode"
             self.contentTextFiled.keyboardType = .asciiCapable
             self.contentTextFiled.text = inventoryItem.barcode
 
         }
         else if(row == 1){
-            self.titleLable.text = "产品名称"
+            self.titleLable.text = "Product Name"
             self.contentTextFiled.placeholder = "Product Name"
             self.contentTextFiled.text = inventoryItem.productName
             self.contentTextFiled.keyboardType = .default
         }
         else if(row == 2){
-            self.titleLable.text = "价格"
+            self.titleLable.text = "Price"
             self.contentTextFiled.placeholder = "Price"
             self.contentTextFiled.text = String(inventoryItem.productPrice)
             self.contentTextFiled.keyboardType = .decimalPad
 
         }
         else if(row == 3){
-            self.titleLable.text = "库存数量"
+            self.titleLable.text = "Quantity"
             self.contentTextFiled.placeholder = "Quantity In Stock"
             self.contentTextFiled.text = String(inventoryItem.quantityInStock ?? 0)
             self.contentTextFiled.keyboardType = .asciiCapableNumberPad

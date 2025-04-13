@@ -30,7 +30,7 @@ class AddInventoryVC: BaseViewController,UITableViewDelegate,UITableViewDataSour
         submitBtn.backgroundColor = UIColor.cColor_light_blue
         submitBtn.layer.cornerRadius = 8
         submitBtn.titleLabel?.font = UIFont.systemFont(ofSize: 16)
-        submitBtn.setTitle("保 存", for: UIControl.State())
+        submitBtn.setTitle("Save", for: UIControl.State())
         submitBtn.setTitleColor(UIColor.white, for: UIControl.State())
         submitBtn.contentHorizontalAlignment = UIControl.ContentHorizontalAlignment.center
         submitBtn.addTarget(self, action: #selector(addInventoryAction), for: .touchUpInside)
@@ -94,28 +94,28 @@ class AddInventoryVC: BaseViewController,UITableViewDelegate,UITableViewDataSour
     @objc func addInventoryAction(btn: UIButton) {
 
         if(inventoryItem.barcode.isEmpty){
-            ProgressTools.showError("条形码不能为空!")
+            ProgressTools.showError("Barcode cannot be empty!")
             return
         }
         if(inventoryItem.productName.isEmpty){
-            ProgressTools.showError("产品名称不能为空！")
+            ProgressTools.showError("Product name cannot be empty!")
             return
         }
          if(inventoryItem.thumbImage == nil ){
-            ProgressTools.showError("产品图片不能为空！")
+            ProgressTools.showError("Product image cannot be empty!")
             return
         }
         if(inventoryItem.recordID != nil){
-            ProgressTools.showError("暂时不能更新！")
+            ProgressTools.showError("Cannot update at this time!")
             return
         }
-        ProgressTools.showLoading("正在新增产品...", self.view)
+        ProgressTools.showLoading("Adding product...", self.view)
         CloudKitManager.shared.saveNote(note: inventoryItem,completion: {
             result in
                switch result {
                case .success(let record):
                    DispatchQueue.main.async {
-                       ProgressTools.showSuccess("新增成功。。。")
+                       ProgressTools.showSuccess("Successfully added...")
                        if((self.blockUpdate) != nil){
                            self.blockUpdate!(1)
                        }
@@ -123,7 +123,7 @@ class AddInventoryVC: BaseViewController,UITableViewDelegate,UITableViewDataSour
                    }
                    _ = LocalInventory(record: record)
                case .failure(let error):
-                   print("解析记录失败: \(error.localizedDescription)")
+                   print("Failed to parse record: \(error.localizedDescription)")
                }
         })
     }
@@ -150,14 +150,14 @@ class AddInventoryVC: BaseViewController,UITableViewDelegate,UITableViewDataSour
                     if Double(text) != nil {
                         self.inventoryItem.productPrice = Double(text) ?? 0.0
                     } else {
-                        ProgressTools.showError("格式错误！")
+                        ProgressTools.showError("Format error!")
                     }
                 }
                 else if(indexPath.row == 3 ){
                     if Int(text) != nil {
                         self.inventoryItem.quantityInStock = Int(text) ?? 0
                     } else {
-                        ProgressTools.showError("格式错误！")
+                        ProgressTools.showError("Format error!")
                     }
                 }
 

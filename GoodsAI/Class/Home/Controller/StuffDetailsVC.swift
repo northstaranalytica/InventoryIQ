@@ -51,7 +51,7 @@ class StuffDetailsVC: BaseViewController,UITableViewDelegate,UITableViewDataSour
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = "商品详情"
+        self.title = "Product Details"
         self.view.backgroundColor  = UIColor.white
         self.view.addSubview(self.tableView)
 
@@ -69,11 +69,11 @@ class StuffDetailsVC: BaseViewController,UITableViewDelegate,UITableViewDataSour
     }
     
     func makeStuddInfo(){
-        self.dataArray.append(["title":"条形码","content":self.inventoryItem.barcode])
-        self.dataArray.append(["title":"产品名称","content":self.inventoryItem.productName])
-        self.dataArray.append(["title":"价格","content":String(inventoryItem.productPrice)])
-        self.dataArray.append(["title":"库存数量","content":String(inventoryItem.quantityInStock)])
-        self.dataArray.append(["title":"score","content":String(inventoryItem.score ?? 0)])
+        self.dataArray.append(["title":"Barcode","content":self.inventoryItem.barcode])
+        self.dataArray.append(["title":"Product Name","content":self.inventoryItem.productName])
+        self.dataArray.append(["title":"Price","content":String(inventoryItem.productPrice)])
+        self.dataArray.append(["title":"Quantity in Stock","content":String(inventoryItem.quantityInStock)])
+        self.dataArray.append(["title":"Score","content":String(inventoryItem.score ?? 0)])
         self.tableView.reloadData()
 
     }

@@ -129,18 +129,31 @@ class CloudKitManager {
                         completion(loadedProducts)
                     case .failure(let error):
                         print("查询失败: \(error.localizedDescription)")
+                        // Still call completion with empty array on error
+                        completion([])
                     }
                 }
             }
         } else {
             // Fallback on earlier versions
             // iOS 14 及以下使用旧 API
-                    operation.recordFetchedBlock = { record in
-                        // 处理获取记录
+            operation.recordFetchedBlock = { record in
+                let product = LocalInventory(record: record)
+                loadedProducts.append(product)
+            }
+            
+            operation.queryCompletionBlock = { [weak self] cursor, error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        print("查询失败: \(error.localizedDescription)")
+                        // Call completion with empty array on error
+                        completion([])
+                    } else {
+                        self?.products = loadedProducts
+                        completion(loadedProducts)
                     }
-                    operation.queryCompletionBlock = { cursor, error in
-                        // 处理完成回调
-                    }
+                }
+            }
         }
 
         publicDB?.add(operation)
