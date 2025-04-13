@@ -90,7 +90,7 @@ class GoodsItemTVCell: UITableViewCell {
         self.imageContentView.image = inventoryItem.thumbImage
         
         if(inventoryItem.score != nil) {
-            self.scoreLable.text = "score: " + String(format: "%.4f", inventoryItem.score ?? 0.0)
+            self.scoreLable.text = "Score: " + String(format: "%.2f", inventoryItem.score ?? 0.0)
         } else {
             self.scoreLable.text = ""
         }

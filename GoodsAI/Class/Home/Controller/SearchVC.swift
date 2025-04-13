@@ -256,7 +256,7 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
                 cell.configure(title: "Image Search",
                               description: "Find similar items to this image",
                               image: searchImage,
-                              buttonTitle: "Search with this image")
+                              buttonTitle: "Search")
                 
                 cell.actionHandler = { [weak self] in
                     self?.handleImageSearchAction(type: 2)
