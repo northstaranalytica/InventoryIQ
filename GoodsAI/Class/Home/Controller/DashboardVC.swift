@@ -155,7 +155,15 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
             target: self,
             action: #selector(addNewItem)
         )
-        navigationItem.rightBarButtonItem = addButton
+        
+        let helpButton = UIBarButtonItem(
+            image: UIImage(systemName: "questionmark.circle"),
+            style: .plain,
+            target: self,
+            action: #selector(showOnboardingTutorial)
+        )
+        
+        navigationItem.rightBarButtonItems = [addButton, helpButton]
     }
     
     override func viewDidLoad() {
@@ -284,6 +292,13 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
         actionSheet.addAction(cancelAction)
         
         present(actionSheet, animated: true)
+    }
+    
+    @objc func showOnboardingTutorial() {
+        // Present the onboarding tutorial
+        let onboardingVC = OnboardingViewController()
+        onboardingVC.modalPresentationStyle = .fullScreen
+        present(onboardingVC, animated: true)
     }
     
     func saveNewItem(_ item: InventoryItem) {

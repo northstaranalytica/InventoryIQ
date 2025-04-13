@@ -50,6 +50,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
        
         window?.makeKeyAndVisible()
+        
+        // Check if this is the first launch to show onboarding
+        checkAndShowOnboardingIfNeeded()
+    }
+    
+    private func checkAndShowOnboardingIfNeeded() {
+        // For testing: Uncomment to reset onboarding status and show it again on next launch
+        // OnboardingViewController.resetOnboardingStatus()
+        
+        // Only show onboarding if it hasn't been shown before
+        if !OnboardingViewController.hasOnboardingBeenShown() {
+            DispatchQueue.main.async {
+                let onboardingVC = OnboardingViewController()
+                onboardingVC.modalPresentationStyle = .fullScreen
+                self.window?.rootViewController?.present(onboardingVC, animated: true)
+            }
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

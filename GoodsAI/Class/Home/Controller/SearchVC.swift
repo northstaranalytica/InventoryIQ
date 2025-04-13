@@ -86,10 +86,31 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
         tableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+        
+        // Add help button to navigation bar
+        setupNavigationItems()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+    }
+    
+    private func setupNavigationItems() {
+        let helpButton = UIBarButtonItem(
+            image: UIImage(systemName: "questionmark.circle"),
+            style: .plain,
+            target: self,
+            action: #selector(showOnboardingTutorial)
+        )
+        
+        navigationItem.rightBarButtonItem = helpButton
+    }
+    
+    @objc func showOnboardingTutorial() {
+        // Present the onboarding tutorial
+        let onboardingVC = OnboardingViewController()
+        onboardingVC.modalPresentationStyle = .fullScreen
+        present(onboardingVC, animated: true)
     }
     
     // MARK: - Search Functions
