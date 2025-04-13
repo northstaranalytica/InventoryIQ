@@ -25,9 +25,12 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
         let tableView = UITableView(frame: .zero, style: .grouped)
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.estimatedRowHeight = 200
+        tableView.estimatedRowHeight = 120
+        tableView.rowHeight = UITableView.automaticDimension
         tableView.separatorColor = .clear
         tableView.backgroundColor = .white
+        tableView.showsVerticalScrollIndicator = false
+        tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 20, right: 0)
         tableView.register(GoodsItemTVCell.self, forCellReuseIdentifier: "GoodsItemTVCell")
         tableView.register(SearchOptionCell.self, forCellReuseIdentifier: "SearchOptionCell")
         if #available(iOS 15.0, *) {
@@ -258,6 +261,12 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
                 cell.actionHandler = { [weak self] in
                     self?.handleImageSearchAction(type: 2)
                 }
+                
+                // Add a "New Search" button to allow taking another photo
+                cell.addSecondaryButton(title: "New Search") { [weak self] in
+                    self?.searchImage = nil
+                    self?.tableView.reloadData()
+                }
             } else {
                 cell.configure(title: "Search by Image",
                               description: "Take a photo or select from gallery",
@@ -292,26 +301,31 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
     // MARK: - UITableViewDelegate
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let view = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 58))
-        view.backgroundColor = .white
+        let headerView = UIView()
+        headerView.backgroundColor = .white
         
-        let centerView = UIView(frame: CGRect(x: 20, y: 14, width: view.frame.width - 40, height: 44))
-        centerView.layer.cornerRadius = 8
-        centerView.backgroundColor = UIColor(red: 243/255.0, green: 243/255.0, blue: 243/255.0, alpha: 1.0)
-        centerView.layer.maskedCorners = CACornerMask(rawValue: UIRectCorner.topLeft.rawValue | UIRectCorner.topRight.rawValue)
+        let containerView = UIView()
+        containerView.backgroundColor = UIColor(red: 243/255.0, green: 243/255.0, blue: 243/255.0, alpha: 1.0)
+        containerView.layer.cornerRadius = 8
         
-        let label = UILabel(frame: CGRect(x: 20, y: 14, width: view.frame.width - 80, height: 16))
-        label.textColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 1.0)
-        label.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        if section < 2 || !similarItems.isEmpty {
+            containerView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        } else {
+            return nil
+        }
+        
+        let titleLabel = UILabel()
+        titleLabel.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        titleLabel.textColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 1.0)
         
         switch section {
         case 0:
-            label.text = "Text Search"
+            titleLabel.text = "Text Search"
         case 1:
-            label.text = "Image Search"
+            titleLabel.text = "Image Search"
         case 2:
             if !similarItems.isEmpty {
-                label.text = "Search Results"
+                titleLabel.text = "Search Results"
             } else {
                 return nil
             }
@@ -319,17 +333,29 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
             return nil
         }
         
-        view.addSubview(centerView)
-        centerView.addSubview(label)
+        headerView.addSubview(containerView)
+        containerView.addSubview(titleLabel)
         
-        return view
+        containerView.snp.makeConstraints { make in
+            make.left.equalToSuperview().offset(20)
+            make.right.equalToSuperview().offset(-20)
+            make.top.equalToSuperview().offset(10)
+            make.bottom.equalToSuperview()
+        }
+        
+        titleLabel.snp.makeConstraints { make in
+            make.left.equalToSuperview().offset(15)
+            make.centerY.equalToSuperview()
+        }
+        
+        return headerView
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         if section == 2 && similarItems.isEmpty {
             return 0
         }
-        return 58
+        return 50
     }
     
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
@@ -337,16 +363,24 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
             return nil
         }
         
-        let view = UIView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 20))
-        view.backgroundColor = .white
+        let footerView = UIView()
+        footerView.backgroundColor = .white
         
-        let centerView = UIView(frame: CGRect(x: 20, y: 0, width: self.view.frame.width - 40, height: 20))
-        centerView.layer.cornerRadius = 8
-        centerView.backgroundColor = UIColor(red: 243/255.0, green: 243/255.0, blue: 243/255.0, alpha: 1.0)
-        centerView.layer.maskedCorners = CACornerMask(rawValue: UIRectCorner.bottomLeft.rawValue | UIRectCorner.bottomRight.rawValue)
+        let containerView = UIView()
+        containerView.backgroundColor = UIColor(red: 243/255.0, green: 243/255.0, blue: 243/255.0, alpha: 1.0)
+        containerView.layer.cornerRadius = 8
+        containerView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
         
-        view.addSubview(centerView)
-        return view
+        footerView.addSubview(containerView)
+        
+        containerView.snp.makeConstraints { make in
+            make.left.equalToSuperview().offset(20)
+            make.right.equalToSuperview().offset(-20)
+            make.top.equalToSuperview()
+            make.bottom.equalToSuperview().offset(-10)
+        }
+        
+        return footerView
     }
     
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
@@ -354,6 +388,13 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
             return 0
         }
         return 20
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if indexPath.section == 2 {
+            return 120 // Fixed height for results cells
+        }
+        return UITableView.automaticDimension
     }
 }
 
@@ -459,10 +500,42 @@ class SearchOptionCell: UITableViewCell {
             make.left.equalTo(iconImageView.snp.right).offset(15)
             make.height.equalTo(40)
             make.bottom.equalToSuperview().offset(-15)
-            make.width.equalTo((containerView.frame.width - 110) / 2)
         }
         
         secondaryButton.snp.makeConstraints { make in
+            make.top.equalTo(descriptionLabel.snp.bottom).offset(15)
+            make.height.equalTo(40)
+            make.bottom.equalToSuperview().offset(-15)
+        }
+        
+        // Set default single-button configuration
+        configureForSingleButton()
+    }
+    
+    private func configureForSingleButton() {
+        secondaryButton.isHidden = true
+        
+        actionButton.snp.remakeConstraints { make in
+            make.top.equalTo(descriptionLabel.snp.bottom).offset(15)
+            make.left.equalTo(iconImageView.snp.right).offset(15)
+            make.right.equalToSuperview().offset(-15)
+            make.height.equalTo(40)
+            make.bottom.equalToSuperview().offset(-15)
+        }
+    }
+    
+    private func configureForDualButtons() {
+        secondaryButton.isHidden = false
+        
+        actionButton.snp.remakeConstraints { make in
+            make.top.equalTo(descriptionLabel.snp.bottom).offset(15)
+            make.left.equalTo(iconImageView.snp.right).offset(15)
+            make.height.equalTo(40)
+            make.bottom.equalToSuperview().offset(-15)
+            make.width.equalTo((UIScreen.main.bounds.width - 130) / 2)
+        }
+        
+        secondaryButton.snp.remakeConstraints { make in
             make.top.equalTo(descriptionLabel.snp.bottom).offset(15)
             make.left.equalTo(actionButton.snp.right).offset(10)
             make.right.equalToSuperview().offset(-15)
@@ -477,30 +550,16 @@ class SearchOptionCell: UITableViewCell {
         iconImageView.image = image
         actionButton.setTitle(buttonTitle, for: .normal)
         
-        // Reset secondary button
-        secondaryButton.isHidden = true
-        actionButton.snp.remakeConstraints { make in
-            make.top.equalTo(descriptionLabel.snp.bottom).offset(15)
-            make.left.equalTo(iconImageView.snp.right).offset(15)
-            make.right.equalToSuperview().offset(-15)
-            make.height.equalTo(40)
-            make.bottom.equalToSuperview().offset(-15)
-        }
+        // Reset to single button layout
+        configureForSingleButton()
     }
     
     func addSecondaryButton(title: String, action: @escaping () -> Void) {
-        secondaryButton.isHidden = false
         secondaryButton.setTitle(title, for: .normal)
         secondaryActionHandler = action
         
-        // Update constraints when secondary button is visible
-        actionButton.snp.remakeConstraints { make in
-            make.top.equalTo(descriptionLabel.snp.bottom).offset(15)
-            make.left.equalTo(iconImageView.snp.right).offset(15)
-            make.height.equalTo(40)
-            make.bottom.equalToSuperview().offset(-15)
-            make.width.equalTo((containerView.frame.width - 110) / 2)
-        }
+        // Update to dual button layout
+        configureForDualButtons()
     }
     
     @objc private func actionButtonTapped() {

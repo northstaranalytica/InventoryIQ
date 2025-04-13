@@ -18,8 +18,23 @@ class ChoicePhotoTools: NSObject , PHPickerViewControllerDelegate, UIImagePicker
         let picker = UIImagePickerController()
         picker.delegate = self
         picker.sourceType = .camera
-        controller.present(picker, animated: true)
-   
+        
+        // Don't try to force portrait mode - let device determine orientation
+        // Don't set specific camera device or orientation settings
+        
+        // Check if camera is available
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            controller.present(picker, animated: true)
+        } else {
+            // Show alert if camera isn't available
+            let alert = UIAlertController(
+                title: "Camera Unavailable",
+                message: "Camera is not available on this device or cannot be accessed.",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            controller.present(alert, animated: true)
+        }
     }
     
      func choicePhoto(controller:UIViewController){

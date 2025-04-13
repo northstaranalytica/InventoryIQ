@@ -38,15 +38,16 @@ class GoodsItemTVCell: UITableViewCell {
 
         self.whiteBgView.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(20)
-            make.top.equalToSuperview()
+            make.top.equalToSuperview().offset(5)
             make.right.equalToSuperview().offset(-20)
-            make.bottom.equalToSuperview().offset(-10)
+            make.bottom.equalToSuperview().offset(-5)
         }
         
         self.imageContentView.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(10)
             make.top.equalToSuperview().offset(12)
-            make.width.height.equalTo(60)
+            make.width.height.equalTo(80)
+            make.bottom.lessThanOrEqualToSuperview().offset(-12)
         }
    
         self.productNameLable.snp.makeConstraints { make in
@@ -55,20 +56,21 @@ class GoodsItemTVCell: UITableViewCell {
             make.right.equalToSuperview().offset(-10)
         }
         
+        self.scoreLable.snp.makeConstraints { make in
+            make.left.equalTo(self.productNameLable.snp.left)
+            make.top.equalTo(self.productNameLable.snp.bottom).offset(5)
+            make.right.equalToSuperview().offset(-10)
+        }
+        
         self.productPriceLable.snp.makeConstraints { make in
             make.left.equalTo(self.productNameLable.snp.left)
-            make.bottom.equalTo(self.imageContentView.snp.bottom).offset(-2)
+            make.top.equalTo(self.scoreLable.snp.bottom).offset(5)
+            make.bottom.lessThanOrEqualTo(self.imageContentView.snp.bottom)
         }
         
         self.inventoryLable.snp.makeConstraints { make in
             make.right.equalToSuperview().offset(-10)
-            make.bottom.equalTo(self.productPriceLable.snp.bottom)
-        }
-        
-        self.scoreLable.snp.makeConstraints { make in
-            make.left.equalTo(self.productNameLable.snp.left)
-            make.centerY.equalTo(self.imageContentView.snp.centerY)
-            make.height.equalTo(14)
+            make.centerY.equalTo(self.productPriceLable.snp.centerY)
         }
         
         self.bottomLineView.snp.makeConstraints { make in
@@ -76,22 +78,22 @@ class GoodsItemTVCell: UITableViewCell {
             make.right.equalToSuperview().offset(-10)
             make.height.equalTo(0.6)
             make.bottom.equalToSuperview().offset(-5)
+            make.top.equalTo(self.imageContentView.snp.bottom).offset(8)
         }
     }
 
     func updateInfo(inventoryItem:InventoryItem){
         
         self.productNameLable.text = inventoryItem.productName
-        self.productPriceLable.text = "$"+String(inventoryItem.productPrice)
-        self.inventoryLable.text = "库存"+String(inventoryItem.quantityInStock)
+        self.productPriceLable.text = "$"+String(format: "%.2f", inventoryItem.productPrice)
+        self.inventoryLable.text = "库存 " + String(inventoryItem.quantityInStock)
         self.imageContentView.image = inventoryItem.thumbImage
         
-        if(inventoryItem.score != nil ){
-            self.scoreLable.text = "score："+String(inventoryItem.score ?? 0.0)
-        }else{
+        if(inventoryItem.score != nil) {
+            self.scoreLable.text = "score: " + String(format: "%.4f", inventoryItem.score ?? 0.0)
+        } else {
             self.scoreLable.text = ""
         }
-
     }
     
     
@@ -100,13 +102,19 @@ class GoodsItemTVCell: UITableViewCell {
         let view = UIView()
         view.backgroundColor = .white
         view.isUserInteractionEnabled = true
+        view.layer.cornerRadius = 8
+        view.layer.shadowColor = UIColor.black.withAlphaComponent(0.1).cgColor
+        view.layer.shadowOffset = CGSize(width: 0, height: 1)
+        view.layer.shadowOpacity = 0.5
+        view.layer.shadowRadius = 4
         return view
     }()
     
 
     lazy var imageContentView: UIImageView = {
         let view = UIImageView()
-        view.backgroundColor = UIColor.systemPurple
+        view.backgroundColor = UIColor.systemGray5
+        view.contentMode = .scaleAspectFit
         view.layer.cornerRadius = 8
         view.layer.masksToBounds = true
         return view
