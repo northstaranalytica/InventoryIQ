@@ -473,7 +473,7 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
         let contactAction = UIAlertAction(title: "Contact Us", style: .default) { _ in
             let contactAlert = UIAlertController(
                 title: "Contact Information",
-                message: "For support or inquiries:\nEmail: support@goodsai.com\nWebsite: www.goodsai.com",
+                message: "For support or inquiries:\nEmail: hello@northstaranalytica.com\nWebsite: https://www.northstaranalytica.com/",
                 preferredStyle: .alert
             )
             contactAlert.addAction(UIAlertAction(title: "OK", style: .default))
