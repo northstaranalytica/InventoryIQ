@@ -221,9 +221,9 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GoodsAI/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Take Photos";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "录制语音";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Record voice";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Choice Photos";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "需要语音识别权限转写文字";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Needs speech recognition permission to transcribe text";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -257,9 +257,9 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GoodsAI/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Take Photos";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "录制语音";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Record voice";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Choice Photos";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "需要语音识别权限转写文字";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Needs speech recognition permission to transcribe text";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;

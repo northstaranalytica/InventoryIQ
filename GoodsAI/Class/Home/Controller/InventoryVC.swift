@@ -48,7 +48,7 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
         btn.setTitleColor(.cColor_Main, for: .normal)
         btn.tag = 1
         btn.addTarget(self, action: #selector(clickSearchAction), for: .touchUpInside)
-        // 创建菜单动作
+        // Create menu actions
         let actions = [
             UIAction(title: "Name (A-Z)") { _ in
                 self.sortOption = SortOption.nameAsc
@@ -72,9 +72,9 @@ class InventoryVC: BaseViewController ,UITableViewDelegate,UITableViewDataSource
             }
         ]
         
-        // 创建菜单并绑定到按钮
+        // Create menu and bind to button
         btn.menu = UIMenu(title: "Sort Menu", children: actions)
-        // 设置点击立即显示菜单（默认需要长按）
+        // Set click to immediately display the menu (default requires long press)
         btn.showsMenuAsPrimaryAction = true
         return btn
     }()

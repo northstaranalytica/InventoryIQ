@@ -39,35 +39,35 @@ class VoiceToTextTools {
         
         let audioSession = AVAudioSession.sharedInstance()
         try? audioSession.setCategory(.record, mode: .measurement)
-        // 2. 创建英文识别器
+        // 2. Create English recognizer
         guard let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US")),
             recognizer.isAvailable else {
-            print("英文识别器不可用")
+            print("English recognizer unavailable")
             return
         }
         
         let tempA = AVAudioEngine()
         audioEngine = tempA
 
-        // 3. 配置音频输入
+        // 3. Configure audio input
         let inputNode = audioEngine.inputNode
         let format = inputNode.outputFormat(forBus: 0)
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
             self?.recognitionRequest?.append(buffer)
         }
                
-        // 4. 创建识别请求
+        // 4. Create recognition request
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
-        recognitionRequest?.shouldReportPartialResults = true // 启用实时识别
+        recognitionRequest?.shouldReportPartialResults = true // Enable real-time recognition
                
-        // 5. 启动引擎
+        // 5. Start engine
         audioEngine.prepare()
         try? audioEngine.start()
 
-        // 6. 开始识别任务
+        // 6. Begin recognition task
         recognizer.recognitionTask(with: recognitionRequest!) { result, _ in
             guard let text = result?.bestTranscription.formattedString else { return }
-            print("识别结果: \(text)")
+            print("Recognition result: \(text)")
             if((self.blockInputText) != nil){
                 self.blockInputText!(text)
             }

@@ -85,7 +85,7 @@ class AccordingTextSearchTVCell: UITableViewCell {
     
     @objc private func handleTouchDown(btn: UIButton) {
         btn.backgroundColor = .systemRed
-        // 震动反馈（iOS 10+）
+        // Vibration feedback (iOS 10+)
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         if((self.blockActiont) != nil){
             self.blockActiont!(1)

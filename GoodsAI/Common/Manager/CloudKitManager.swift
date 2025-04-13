@@ -19,14 +19,14 @@ class CloudKitManager {
 
     
     
-    // 静态常量共享实例（线程安全）
-       static let shared = CloudKitManager()
-       // 私有化初始化方法，防止外部创建实例
-       private init() {
-           initCKContainer()
-       }
+    // Static constant shared instance (thread-safe)
+    static let shared = CloudKitManager()
+    // Private initialization method to prevent external instance creation
+    private init() {
+        initCKContainer()
+    }
     
-    // 示例方法
+    // Example method
     private func initCKContainer() {
         publicDB = container.publicCloudDatabase
         checkICloudStatus()
@@ -35,18 +35,18 @@ class CloudKitManager {
     private func checkICloudStatus() {
         container.accountStatus { status, error in
             guard status == .available else {
-                print("iCloud未登录或不可用")
+                print("iCloud not logged in or unavailable")
                 return
             }
         }
     }
 
     
-    // MARK: - 保存数据方法
+    // MARK: - Save data method
     func saveNote(note: InventoryItem, completion: @escaping (Result<CKRecord, Error>) -> Void) {
-        // 1. 创建 CKRecord
-        let record = CKRecord(recordType: "Note") // 必须与 Dashboard 中的 Record Type 名称一致
-        // 2. 设置字段值（类型需与 Dashboard 定义匹配）
+        // 1. Create CKRecord
+        let record = CKRecord(recordType: "Note") // Must match Record Type name in Dashboard
+        // 2. Set field values (types must match Dashboard definition)
         record["barcode"] = note.barcode as CKRecordValue
         record["productName"] = note.productName as CKRecordValue
         record["price"] = note.productPrice as CKRecordValue
@@ -55,20 +55,20 @@ class CloudKitManager {
        
         if((note.thumbImage) != nil){
             guard let imageAsset = createImageAsset(image: note.thumbImage!) else {
-                //  图片错误
-                ProgressTools.showError("图片错误，请更换图片！")
+                // Image error
+                ProgressTools.showError("Image error, please change the image!")
                 return
             }
             record["thumbImage"] = imageAsset as CKRecordValue
         }
         
         
-        // 4. 执行保存操作
+        // 4. Execute save operation
         publicDB?.save(record) { savedRecord, error in
             if let error = error {
                 // Check if it's a recordName error - silence these specific errors
                 if !error.localizedDescription.contains("recordName") {
-                    print("保存失败: \(error.localizedDescription)")
+                    print("Save failed: \(error.localizedDescription)")
                 }
                 completion(.failure(error))
                 return
@@ -92,22 +92,22 @@ class CloudKitManager {
         operation.configuration.qualityOfService = .userInitiated
         operation.modifyRecordsCompletionBlock = { (_, deletedIDs, error) in
             if let error = error {
-                print("删除失败: \(error.localizedDescription)")
+                print("Delete failed: \(error.localizedDescription)")
                 completion(false)
             } else if let ids = deletedIDs {
-                print("成功删除记录: \(ids)")
+                print("Successfully deleted records: \(ids)")
                 completion(true)
             }
         }
         
-        // 4. 执行操作
+        // 4. Execute operation
         publicDB?.add(operation)
     }
     
     
     
     func fetchProducts(completion: @escaping ([LocalInventory]) -> Void) {
-          let predicate = NSPredicate(value: true) // 查询所有记录
+          let predicate = NSPredicate(value: true) // Query all records
           let query = CKQuery(recordType: "Note", predicate: predicate)
           
           // Use timestamp for sorting instead of creationDate
@@ -125,7 +125,7 @@ class CloudKitManager {
                 case .failure(let error):
                     // Silently handle errors - don't log them to console
                     if !error.localizedDescription.contains("recordName") {
-                        print("解析记录失败: \(error.localizedDescription)")
+                        print("Parse record failed: \(error.localizedDescription)")
                     }
                 }
             }
@@ -138,7 +138,7 @@ class CloudKitManager {
                         completion(loadedProducts)
                     case .failure(let error):
                         if !error.localizedDescription.contains("recordName") {
-                            print("查询失败: \(error.localizedDescription)")
+                            print("Query failed: \(error.localizedDescription)")
                         }
                         // Still call completion with empty array on error
                         completion([])
@@ -147,7 +147,7 @@ class CloudKitManager {
             }
         } else {
             // Fallback on earlier versions
-            // iOS 14 及以下使用旧 API
+            // For iOS 14 and below, use old API
             operation.recordFetchedBlock = { record in
                 let product = LocalInventory(record: record)
                 loadedProducts.append(product)
@@ -157,7 +157,7 @@ class CloudKitManager {
                 DispatchQueue.main.async {
                     if let error = error {
                         if !error.localizedDescription.contains("recordName") {
-                            print("查询失败: \(error.localizedDescription)")
+                            print("Query failed: \(error.localizedDescription)")
                         }
                         // Call completion with empty array on error
                         completion([])
@@ -176,26 +176,26 @@ class CloudKitManager {
     
     
     func createImageAsset(image: UIImage) -> CKAsset? {
-        // 1. 将 UIImage 转为 Data（压缩质量可调整）
+        // 1. Convert UIImage to Data (compression quality adjustable)
         guard let imageData = image.jpegData(compressionQuality: 0.6) else {
-            print("图片转换失败")
+            print("Image conversion failed")
             return nil
         }
-        // 2. 创建临时文件路径（避免文件名冲突）
+        // 2. Create temporary file path (avoid filename conflicts)
         let tempDirectory = FileManager.default.temporaryDirectory
-        let fileName = UUID().uuidString + ".jpg" // 唯一文件名
+        let fileName = UUID().uuidString + ".jpg" // Unique filename
         let fileURL = tempDirectory.appendingPathComponent(fileName)
-        // 3. 写入临时文件
+        // 3. Write to temporary file
         do {
             try imageData.write(to: fileURL)
             return CKAsset(fileURL: fileURL)
         } catch {
-            print("临时文件写入失败: \(error)")
+            print("Temporary file write failed: \(error)")
             return nil
         }
     }
     
-    // MARK: - 更新数据方法
+    // MARK: - Update data method
     func updateNote(note: InventoryItem, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let recordID = note.recordID else {
             completion(.failure(NSError(domain: "CloudKitManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "No record ID found"])))

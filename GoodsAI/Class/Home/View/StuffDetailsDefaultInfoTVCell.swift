@@ -28,7 +28,7 @@ class StuffDetailsDefaultInfoTVCell: UITableViewCell {
     }
     
     
-    // 背景
+    // Background
     lazy var whiteBgView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
@@ -38,7 +38,7 @@ class StuffDetailsDefaultInfoTVCell: UITableViewCell {
     
     private lazy var titleLable: UILabel = {
         let label = UILabel()
-        label.text = "工单类型"
+        label.text = "Work Order Type"
         label.textAlignment = NSTextAlignment.left
         label.textColor = UIColor.cColor_text_333
         label.font = UIFont.systemFont(ofSize: 14,weight: UIFont.Weight.regular)
@@ -51,7 +51,7 @@ class StuffDetailsDefaultInfoTVCell: UITableViewCell {
     
     private lazy var contentLable: UILabel = {
         let label = UILabel()
-        label.text = "内容"
+        label.text = "Content"
         label.textAlignment = NSTextAlignment.left
         label.textColor = UIColor.cColor_text_333
         label.font = UIFont.systemFont(ofSize: 14,weight: UIFont.Weight.regular)

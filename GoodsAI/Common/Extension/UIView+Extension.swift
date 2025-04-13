@@ -10,13 +10,13 @@ let CTEmptyViewTag: Int = 100121200
 let CTNetErrorViewTag: Int = 100121201
 
 enum CTViewState {
-    /// 移除页面loading、无数据视图、网络异常视图
+    /// Remove page loading, empty data view, network error view
     case CT_normal
-    /// 设置页面loading状态
+    /// Set page loading state
     case CT_loading
-    /// 设置页面无数据，无背景色
+    /// Set page empty data, no background color
     case CT_empty
-    /// 设置页面网络异常
+    /// Set page network error
     case CT_netError
 }
 
@@ -87,7 +87,7 @@ extension UIView {
 //        let netError = CTNetErrorView()
 //        netError.backgroundColor = .CTLightGray_F9F9F9
 //        netError.createSubviews(title: nil, imageName: nil){
-//            //网络异常时、点击重新加载操作
+//            //Network error, click to reload operation
 //            reloadAction?()
 //        }
 //        netError.tag = CTNetErrorViewTag
@@ -102,7 +102,7 @@ extension UIView {
 }
 
 
-//MARK: - 获取当前视图控制器
+//MARK: - Get current view controller
 extension UIView {
     
     
@@ -125,7 +125,7 @@ extension UIView {
         return nil
     }
     
-    /// 部分圆角
+    /// Partial corner radius
     func CTCorner(byRoundingCorners corners: UIRectCorner, radii: CGFloat, size: CGSize) {
         let maskPath = UIBezierPath(roundedRect: CGRect(x: 0, y: 0, width: size.width, height: size.height), byRoundingCorners: corners, cornerRadii: CGSize(width: radii, height: radii))
         let maskLayer = CAShapeLayer()

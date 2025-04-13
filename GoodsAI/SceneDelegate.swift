@@ -6,7 +6,7 @@
 //
 
 import UIKit
-import IQKeyboardManagerSwift // 导入IQKeyboardManager
+import IQKeyboardManagerSwift // Import IQKeyboardManager
 import RxSwift
 import SnapKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
@@ -33,7 +33,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 
         
-        // iOS15之后导航条背景透明问题
+        // Navigation bar background transparency issue after iOS15
         if #available(iOS 15, *) {
             UITableView.appearance().sectionHeaderTopPadding = 0
             

@@ -85,7 +85,7 @@ class GoodsItemTVCell: UITableViewCell {
         
         self.productNameLable.text = inventoryItem.productName
         self.productPriceLable.text = "$"+String(format: "%.2f", inventoryItem.productPrice)
-        self.inventoryLable.text = "库存 " + String(inventoryItem.quantityInStock)
+        self.inventoryLable.text = "Inventory " + String(inventoryItem.quantityInStock)
         self.imageContentView.image = inventoryItem.thumbImage
         
         if(inventoryItem.score != nil) {
@@ -96,7 +96,7 @@ class GoodsItemTVCell: UITableViewCell {
     }
     
     
-    // 背景
+    // Background
     lazy var whiteBgView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
@@ -121,7 +121,7 @@ class GoodsItemTVCell: UITableViewCell {
     
     private lazy var productNameLable: UILabel = {
         let label = UILabel()
-        label.text = "商品名称"
+        label.text = "Product Name"
         label.textAlignment = NSTextAlignment.left
         label.textColor = UIColor.darkText
         label.font = UIFont.systemFont(ofSize: 14,weight: UIFont.Weight.semibold)
@@ -139,7 +139,7 @@ class GoodsItemTVCell: UITableViewCell {
 
     private lazy var inventoryLable: UILabel = {
         let label = UILabel()
-        label.text = "库存：200"
+        label.text = "Inventory: 200"
         label.textAlignment = NSTextAlignment.left
         label.textColor = UIColor.lightGray
         label.font = UIFont.systemFont(ofSize: 12,weight: UIFont.Weight.regular)

@@ -14,7 +14,7 @@ class BaseNavigationController: UINavigationController {
         navigationBar.tintColor = .systemBlue
     }
     
-    // 拦截 push 操作，自动隐藏底部 TabBar
+    // Intercept push operation, automatically hide bottom TabBar
     override func pushViewController(_ viewController: UIViewController, animated: Bool) {
         if viewControllers.count > 0 {
             viewController.hidesBottomBarWhenPushed = true
@@ -24,7 +24,7 @@ class BaseNavigationController: UINavigationController {
 }
 
 extension BaseNavigationController: UIGestureRecognizerDelegate {
-    // 允许侧滑返回
+    // Allow swipe back gesture
     func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         return viewControllers.count > 1
     }

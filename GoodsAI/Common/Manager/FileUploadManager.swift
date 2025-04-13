@@ -8,61 +8,61 @@
 import Foundation
 import CloudKit
 
-// 文件上传结果结构体
+// File upload result structure
 struct UploadResult {
     let inventoryItem: InventoryItem
     let isSuccess: Bool
     let error: Error?
 }
 
-// 回调类型别名
+// Callback type aliases
 typealias SingleUploadCallback = ((Result<CKRecord, Error>)) -> Void
 typealias AllCompleteCallback = ([(Result<CKRecord, Error>)]) -> Void
 
 class FileUploadManager {
-    // 串行队列保证线程安全
+    // Serial queue to ensure thread safety
     private let queue = DispatchQueue(label: "com.upload.manager")
     private var currentTasks: [InventoryItem] = []
     private var results: [(Result<CKRecord, Error>)] = []
     
-    /// 批量上传入口方法
+    /// Batch upload entry method
     func uploadFiles(_ items: [InventoryItem],
                      eachProgress: SingleUploadCallback?,
                      allComplete: @escaping AllCompleteCallback) {
         queue.async {
-            // 重置状态
+            // Reset state
             self.currentTasks = items
             self.results.removeAll()
             
-            // 开始循环上传
+            // Start loop upload
             self.processNextFile(index: 0,
                                  eachProgress: eachProgress,
                                  allComplete: allComplete)
         }
     }
     
-    // MARK: - 私有方法
+    // MARK: - Private methods
     private func processNextFile(index: Int,
                                  eachProgress: SingleUploadCallback?,
                                  allComplete: @escaping AllCompleteCallback) {
         queue.async {
             guard index < self.currentTasks.count else {
-                // 所有任务完成时回调
+                // Callback when all tasks are completed
                 DispatchQueue.main.async { allComplete(self.results) }
                 return
             }
             
             let fileURL = self.currentTasks[index]
             
-            // 模拟异步上传操作（替换成真实上传逻辑）
+            // Simulate asynchronous upload operation (replace with real upload logic)
             self.mockUploadFile(fileURL) { result in
-                // 记录结果
+                // Record results
                 self.results.append(result)
                 
-                // 单个文件完成回调
+                // Single file completion callback
                 DispatchQueue.main.async { eachProgress?(result) }
                 
-                // 继续处理下一个文件
+                // Continue processing the next file
                 self.processNextFile(index: index + 1,
                                     eachProgress: eachProgress,
                                     allComplete: allComplete)
@@ -70,7 +70,7 @@ class FileUploadManager {
         }
     }
     
-    // MARK: - 模拟上传实现（替换成真实网络请求）
+    // MARK: - Mock upload implementation (replace with real network request)
     private func mockUploadFile(_ inventoryItem: InventoryItem,
                                completion: @escaping (Result<CKRecord, Error>) -> Void) {
         

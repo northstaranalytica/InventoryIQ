@@ -23,7 +23,7 @@ struct LocalInventory: Identifiable {
            self.productName = record["productName"] as? String ?? ""
            self.price = record["price"] as? Double ?? 0.0
            self.quantityInStock = record["quantityInStock"] as? Int ?? 0
-           // 解析 CKAsset 为 UIImage
+           // Parse CKAsset to UIImage
            if let asset = record["thumbImage"] as? CKAsset,
               let data = try? Data(contentsOf: asset.fileURL!) {
                self.thumbImage = UIImage(data: data)

@@ -9,52 +9,52 @@ import UIKit
 extension UIColor {
     
 
-    /// 获取颜色
+    /// Get color
     static let kHexRGB:(Int) -> UIColor = {hex in
         return UIColor(red: ((CGFloat)((hex & 0xFF0000) >> 16)) / 255.0, green: ((CGFloat)((hex & 0xFF00) >> 8)) / 255.0, blue: ((CGFloat)(hex & 0xFF)) / 255.0, alpha: 1)
     }
 
-    /// 获取颜色带透明度
+    /// Get color with transparency
     static let kHexRGBA:(Int, CGFloat) -> UIColor = { hex,ali in
         return UIColor(red: ((CGFloat)((hex & 0xFF0000) >> 16)) / 255.0, green: ((CGFloat)((hex & 0xFF00) >> 8)) / 255.0, blue: ((CGFloat)(hex & 0xFF)) / 255.0, alpha:ali)
     }
     
-    /// 黑色+透明度
+    /// Black + transparency
     static let zdBlackA_000000:(CGFloat) -> UIColor = { ali in
         return UIColor(red: ((CGFloat)((0x000000 & 0xFF0000) >> 16)) / 255.0, green: ((CGFloat)((0x000000 & 0xFF00) >> 8)) / 255.0, blue: ((CGFloat)(0x000000 & 0xFF)) / 255.0, alpha:ali)
     }
     
-    // 主色调
+    // Main color tone
     static let cColor_Main = kHexRGB(0x0762E1)
     static let cColor_light_blue = kHexRGB(0x0061FF)
     
-    // 黑色主色调
+    // Black main color tone
     static let cColor_text_333 = kHexRGB(0x333333)
     
-    // 灰色
+    // Gray
     static let cColor_text_9BA3AA = kHexRGB(0x9BA3AA)
     
-    // 灰色
+    // Gray
     static let cColor_text_787878 = kHexRGB(0x787878)
     
-    // 线的颜色
+    // Line color
     static let cColor_Line = kHexRGB(0xEAEAEA )
     
-    // 背景
+    // Background
     static let cColor_F3F3F3 = kHexRGB(0xF3F3F3)
     
-    // 紫色
+    // Purple
     static let cColor_other_7C79F4 = kHexRGB(0x7C79F4)
 
-    // 紫色背景
+    // Purple background
     static let cColor_other_ECEBFF = kHexRGB(0xECEBFF)
    
-    // 浅蓝色背景
+    // Light blue background
     static let cColor_other_E6F7FF = kHexRGB(0xE6F7FF)
 
     
-     // 红色
-     static let cColor_red_EF2C2B = kHexRGB(0xEF2C2B)
+    // Red
+    static let cColor_red_EF2C2B = kHexRGB(0xEF2C2B)
     
     
     

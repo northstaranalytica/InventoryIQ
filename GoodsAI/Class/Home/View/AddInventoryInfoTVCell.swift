@@ -27,7 +27,7 @@ class AddInventoryInfoTVCell: UITableViewCell {
     }
     
     
-    // 背景
+    // Background
     lazy var whiteBgView: UIView = {
         let view = UIView()
         view.backgroundColor = .white

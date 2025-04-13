@@ -9,7 +9,7 @@ import UIKit
 import MobileCoreServices
 import SwiftCSV
 
-// 自定义数据结构
+// Custom data structure
 struct CSVRow: Identifiable {
     var id = UUID()
     let barCode: String
@@ -27,11 +27,11 @@ class ViewController: UIViewController ,UIDocumentPickerDelegate{
         
         let myButton = UIButton()
         myButton.frame = CGRect(x: 50, y: 100, width: 200, height: 50) // x, y, width, height
-        myButton.setTitle("点击我", for: .normal)
+        myButton.setTitle("Click me", for: .normal)
         myButton.setTitleColor(.blue, for: .normal)
         myButton.backgroundColor = .lightGray
-        myButton.layer.cornerRadius = 10  // 圆角半径，使按钮更圆润
-        myButton.clipsToBounds = true     // 确保圆角效果正确显示
+        myButton.layer.cornerRadius = 10  // Corner radius, makes the button more rounded
+        myButton.clipsToBounds = true     // Ensures the corner effect is displayed correctly
         myButton.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
         self.view.addSubview(myButton)
 
@@ -40,7 +40,7 @@ class ViewController: UIViewController ,UIDocumentPickerDelegate{
     
 
     @objc func buttonTapped() {
-        print("按钮被点击了！")
+        print("Button was clicked!")
         let documentPicker = UIDocumentPickerViewController(documentTypes: [String(kUTTypeCommaSeparatedText)], in: .import)
                 documentPicker.delegate = self
                 documentPicker.allowsMultipleSelection = false
@@ -49,7 +49,7 @@ class ViewController: UIViewController ,UIDocumentPickerDelegate{
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
             guard let filePathURL = urls.first else { return }
-            // 处理选中的文件，例如获取文件内容或显示图片等
+            // Process selected file, such as getting file content or displaying images
             print("Selected file URL: \(filePathURL)")
         self.parseCSV(url: filePathURL)
         
@@ -64,7 +64,7 @@ class ViewController: UIViewController ,UIDocumentPickerDelegate{
         do {
             let csv = try CSV<Named>(url: url, delimiter: ",", encoding: .utf8)
             //            let csv = try CSV<Named>(url: url)
-            // 映射为自定义数据结构
+            // Map to custom data structure
             let rows = csv.rows.compactMap { row -> CSVRow? in
                 guard let barCode = row["barCode"],
                       let productName = row["productName"],
@@ -87,9 +87,9 @@ class ViewController: UIViewController ,UIDocumentPickerDelegate{
             
             
             
-        } catch { /* 错误处理 */
+        } catch { /* Error handling */
             DispatchQueue.main.async {
-                print("解析失败: \(error.localizedDescription)")
+                print("Parsing failed: \(error.localizedDescription)")
             }
         }}
 

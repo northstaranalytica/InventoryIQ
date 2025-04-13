@@ -595,7 +595,7 @@ class DatabaseManager {
                             // Store the item
                             self.inventoryItems[barcode] = inventoryItem
                             
-                            // Generate and store embedding for the image  为图像生成并存储嵌入
+                            // Generate and store embedding for the image
                             if let embedding = self.generateCLIPEmbedding(for: imageData) {
                                 self.imageVectors[barcode] = embedding
                                 print("Added mock item with barcode: \(barcode)")
@@ -982,7 +982,7 @@ class DatabaseManager {
         return buffer
     }
     
-    // Calculate cosine similarity between two vectors 计算两个向量之间的余弦相似度
+    // Calculate cosine similarity between two vectors
     private func cosineSimilarity(_ a: [Float], _ b: [Float]) -> Float {
         guard a.count == b.count && a.count > 0 else { 
             if debugVectorization {
@@ -1260,21 +1260,21 @@ class DatabaseManager {
         return result
     }
     
-    /// Find similar items using text query使用文本查询查找相似物品
+    /// Find similar items using text query
     func findSimilarItemsByText(query: String, limit: Int = 5) -> [InventoryItem] {
-        // Generate embedding for the text query  为文本查询生成嵌入
+        // Generate embedding for the text query
         guard let queryEmbedding = generateTextEmbedding(for: query) else {
             print("Failed to generate embedding for text query: \(query), returning random items instead")
             return getRandomItems(limit: limit)
         }
         
-        // If we have no vectors to compare against, return random items 如果没有可供比较的向量，则返回随机元素
+        // If we have no vectors to compare against, return random items
         if self.imageVectors.isEmpty {
             print("No image vectors available, returning random items instead")
             return getRandomItems(limit: limit)
         }
         
-        // Calculate similarity scores for all items 计算所有物品的相似度得分
+        // Calculate similarity scores for all items
         var similarityScores: [(barcode: String, score: Float)] = []
         
         print(self.imageVectors.count)
@@ -1283,13 +1283,13 @@ class DatabaseManager {
             similarityScores.append((barcode: barcode, score: similarity))
         }
         
-        // Sort by similarity score (highest first) 按相似度得分排序（最高者优先）
+        // Sort by similarity score (highest first)
         similarityScores.sort { $0.score > $1.score }
         
-        // Take the top 'limit' results  以最高的` limit `结果为例
+        // Take the top 'limit' results
         let topResults = similarityScores.prefix(limit)
         
-        // Convert to inventory items  转换为库存物品
+        // Convert to inventory items
         var result: [InventoryItem] = []
         for (barcode, score) in topResults {
             if var item = self.inventoryItems[barcode] {

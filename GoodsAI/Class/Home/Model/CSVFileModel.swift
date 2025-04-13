@@ -19,7 +19,7 @@ struct DataModel {
     var thumbImage: UIImage?  
 }
 
-// 解析 CSV 并处理图像列
+// Parse CSV and process image columns
 func parseCSV(filePath: URL,completion: @escaping ([InventoryItem]) -> Void) {
     
     var allInventory:[InventoryItem] = []
@@ -29,14 +29,14 @@ func parseCSV(filePath: URL,completion: @escaping ([InventoryItem]) -> Void) {
         try csv.enumerateAsDict { rowDict in
             guard let imageField = rowDict["thumbImage"] else { return }
             
-            // 根据存储类型选择处理方式
+            // Choose processing method based on storage type
             let image: UIImage?
             if imageField.hasPrefix("http") {
-                image = loadImageFromURL(urlString: imageField)  // 网络图片加载 ‌:ml-citation{ref="4" data="citationList"}
+                image = loadImageFromURL(urlString: imageField)  // Network image loading ‌:ml-citation{ref="4" data="citationList"}
             } else if let data = Data(base64Encoded: imageField) {
-                image = UIImage(data: data)  // Base64 解码 ‌:ml-citation{ref="7" data="citationList"}
+                image = UIImage(data: data)  // Base64 decoding ‌:ml-citation{ref="7" data="citationList"}
             } else {
-                image = UIImage(named: imageField)  // 本地路径加载 ‌:ml-citation{ref="4" data="citationList"}
+                image = UIImage(named: imageField)  // Local path loading ‌:ml-citation{ref="4" data="citationList"}
             }
             
             let barcode = rowDict["barcode"] ?? ""
@@ -48,12 +48,12 @@ func parseCSV(filePath: URL,completion: @escaping ([InventoryItem]) -> Void) {
 
             let model = InventoryItem(barcode:barcode, productName: productName, productPrice: productPrice ?? 0.0, imageData: nil, quantityInStock: quantityInStock ?? 0, thumbImage: thumbImage)
             allInventory.append(model)
-            // 存储或展示 model
+            // Store or display model
         }
         completion(allInventory)
         
     } catch {
-        print("CSV 解析失败: \(error)")
+        print("CSV parsing failed: \(error)")
     }
 }
 
@@ -72,7 +72,7 @@ func parseCSVFile(filePath: String) -> [[String: String]] {
 //                if let header = csv.header[index] {
 ////                    record[header] = element
 //                } else {
-//                    // 处理无头信息的情况，例如额外的行信息等。
+//                    // Handle cases without header information, such as extra row information, etc.
 //                }
             }
             records.append(record)
@@ -98,9 +98,9 @@ func parseCSVFile(filePath: String) -> [[String: String]] {
 
 
 
-/// 从 DISPIMG 字符串中提取 ID
+/// Extract ID from DISPIMG string
 func extractImageID(from dispimgString: String) -> String? {
-    let pattern = #"DISPIMG$\"(.+?)\",\s*\d+$"#  // 正则匹配模式
+    let pattern = #"DISPIMG$\"(.+?)\",\s*\d+$"#  // Regular expression pattern
     guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
     
     let matches = regex.matches(in: dispimgString, range: NSRange(dispimgString.startIndex..., in: dispimgString))
@@ -110,7 +110,7 @@ func extractImageID(from dispimgString: String) -> String? {
     return String(dispimgString[idRange])
 }
 
-// 从 URL 加载图像
+// Load image from URL
 private func loadImageFromURL(urlString: String) -> UIImage? {
     guard let url = URL(string: urlString),
           let data = try? Data(contentsOf: url) else { return nil }
