@@ -105,6 +105,10 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
         self.similarItems.removeAll()
         self.tableView.reloadData()
         
+        // Reset voice search state
+        self.isVoiceSearchActive = false
+        self.voiceToText.stopLiveTranscribe()
+        
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
             
@@ -121,6 +125,7 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
             
             DispatchQueue.main.async {
                 self.similarItems = items
+                // Fully reload the table to reset all buttons and display results
                 self.tableView.reloadData()
                 ProgressTools.hide(self.view)
                 
@@ -144,6 +149,10 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
         
         ProgressTools.showLoading("Searching...", self.view)
         
+        // Reset voice search state
+        self.isVoiceSearchActive = false
+        self.voiceToText.stopLiveTranscribe()
+        
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
             
@@ -159,6 +168,7 @@ class SearchVC: BaseViewController, UITableViewDelegate, UITableViewDataSource {
             
             DispatchQueue.main.async {
                 self.similarItems = items
+                // Fully reload the table to reset all buttons and display results
                 self.tableView.reloadData()
                 ProgressTools.hide(self.view)
                 
