@@ -6,34 +6,30 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		8BC36B3A48C3930347809231 /* Pods_GoodsAI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A56A023573C25A65B41D6B8 /* Pods_GoodsAI.framework */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
-		6A56A023573C25A65B41D6B8 /* Pods_GoodsAI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_GoodsAI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		AA8071FB2D7EF634007C6554 /* GoodsAI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GoodsAI.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		ED1B066292C5601BB0BEE3A2 /* Pods-GoodsAI.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoodsAI.debug.xcconfig"; path = "Target Support Files/Pods-GoodsAI/Pods-GoodsAI.debug.xcconfig"; sourceTree = "<group>"; };
-		F9D0F2E89EACEBA4230BB37E /* Pods-GoodsAI.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoodsAI.release.xcconfig"; path = "Target Support Files/Pods-GoodsAI/Pods-GoodsAI.release.xcconfig"; sourceTree = "<group>"; };
+		6A56A023573C25A65B41D6B8 /* Pods_InventoryIQ.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_InventoryIQ.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA8071FB2D7EF634007C6554 /* InventoryIQ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InventoryIQ.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		ED1B066292C5601BB0BEE3A2 /* Pods-InventoryIQ.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InventoryIQ.debug.xcconfig"; path = "Target Support Files/Pods-InventoryIQ/Pods-InventoryIQ.debug.xcconfig"; sourceTree = "<group>"; };
+		F9D0F2E89EACEBA4230BB37E /* Pods-InventoryIQ.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InventoryIQ.release.xcconfig"; path = "Target Support Files/Pods-InventoryIQ/Pods-InventoryIQ.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		AA80720D2D7EF635007C6554 /* Exceptions for "GoodsAI" folder in "GoodsAI" target */ = {
+		8966D7DF2DAC99BC0000E0F2 /* Exceptions for "InventoryIQ" folder in "InventoryIQ" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = AA8071FA2D7EF634007C6554 /* GoodsAI */;
+			target = AA8071FA2D7EF634007C6554 /* InventoryIQ */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		AA8071FD2D7EF634007C6554 /* GoodsAI */ = {
+		AA8071FD2D7EF634007C6554 /* InventoryIQ */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				AA80720D2D7EF635007C6554 /* Exceptions for "GoodsAI" folder in "GoodsAI" target */,
+				8966D7DF2DAC99BC0000E0F2 /* Exceptions for "InventoryIQ" folder in "InventoryIQ" target */,
 			);
-			path = GoodsAI;
+			path = InventoryIQ;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -43,7 +39,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8BC36B3A48C3930347809231 /* Pods_GoodsAI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,8 +48,8 @@
 		159FBD1C08D75DEDD4735A6B /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				ED1B066292C5601BB0BEE3A2 /* Pods-GoodsAI.debug.xcconfig */,
-				F9D0F2E89EACEBA4230BB37E /* Pods-GoodsAI.release.xcconfig */,
+				ED1B066292C5601BB0BEE3A2 /* Pods-InventoryIQ.debug.xcconfig */,
+				F9D0F2E89EACEBA4230BB37E /* Pods-InventoryIQ.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -62,7 +57,7 @@
 		AA8071F22D7EF634007C6554 = {
 			isa = PBXGroup;
 			children = (
-				AA8071FD2D7EF634007C6554 /* GoodsAI */,
+				AA8071FD2D7EF634007C6554 /* InventoryIQ */,
 				AA8071FC2D7EF634007C6554 /* Products */,
 				159FBD1C08D75DEDD4735A6B /* Pods */,
 				AC5D66ECA136C28B1E5ABA56 /* Frameworks */,
@@ -72,7 +67,7 @@
 		AA8071FC2D7EF634007C6554 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AA8071FB2D7EF634007C6554 /* GoodsAI.app */,
+				AA8071FB2D7EF634007C6554 /* InventoryIQ.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -80,7 +75,7 @@
 		AC5D66ECA136C28B1E5ABA56 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				6A56A023573C25A65B41D6B8 /* Pods_GoodsAI.framework */,
+				6A56A023573C25A65B41D6B8 /* Pods_InventoryIQ.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -88,9 +83,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		AA8071FA2D7EF634007C6554 /* GoodsAI */ = {
+		AA8071FA2D7EF634007C6554 /* InventoryIQ */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AA80720E2D7EF635007C6554 /* Build configuration list for PBXNativeTarget "GoodsAI" */;
+			buildConfigurationList = AA80720E2D7EF635007C6554 /* Build configuration list for PBXNativeTarget "InventoryIQ" */;
 			buildPhases = (
 				8E023F83C6BF6EE58D24008D /* [CP] Check Pods Manifest.lock */,
 				AA8071F72D7EF634007C6554 /* Sources */,
@@ -103,11 +98,11 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				AA8071FD2D7EF634007C6554 /* GoodsAI */,
+				AA8071FD2D7EF634007C6554 /* InventoryIQ */,
 			);
-			name = GoodsAI;
-			productName = GoodsAI;
-			productReference = AA8071FB2D7EF634007C6554 /* GoodsAI.app */;
+			name = InventoryIQ;
+			productName = InventoryIQ;
+			productReference = AA8071FB2D7EF634007C6554 /* InventoryIQ.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -125,7 +120,7 @@
 					};
 				};
 			};
-			buildConfigurationList = AA8071F62D7EF634007C6554 /* Build configuration list for PBXProject "GoodsAI" */;
+			buildConfigurationList = AA8071F62D7EF634007C6554 /* Build configuration list for PBXProject "InventoryIQ" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -139,7 +134,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				AA8071FA2D7EF634007C6554 /* GoodsAI */,
+				AA8071FA2D7EF634007C6554 /* InventoryIQ */,
 			);
 		};
 /* End PBXProject section */
@@ -170,7 +165,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-GoodsAI-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-InventoryIQ-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -183,15 +178,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-GoodsAI/Pods-GoodsAI-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-InventoryIQ/Pods-InventoryIQ-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-GoodsAI/Pods-GoodsAI-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-InventoryIQ/Pods-InventoryIQ-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GoodsAI/Pods-GoodsAI-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-InventoryIQ/Pods-InventoryIQ-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -209,17 +204,17 @@
 /* Begin XCBuildConfiguration section */
 		AA80720F2D7EF635007C6554 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = ED1B066292C5601BB0BEE3A2 /* Pods-GoodsAI.debug.xcconfig */;
+			baseConfigurationReference = ED1B066292C5601BB0BEE3A2 /* Pods-InventoryIQ.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = GoodsAI/GoodsAI.entitlements;
+				CODE_SIGN_ENTITLEMENTS = InventoryIQ/InventoryIQ.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = Q35MB4F9UW;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = GoodsAI/Info.plist;
+				INFOPLIST_FILE = InventoryIQ/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Take Photos";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Record voice";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Choice Photos";
@@ -245,17 +240,17 @@
 		};
 		AA8072102D7EF635007C6554 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F9D0F2E89EACEBA4230BB37E /* Pods-GoodsAI.release.xcconfig */;
+			baseConfigurationReference = F9D0F2E89EACEBA4230BB37E /* Pods-InventoryIQ.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = GoodsAI/GoodsAI.entitlements;
+				CODE_SIGN_ENTITLEMENTS = InventoryIQ/InventoryIQ.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = Q35MB4F9UW;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = GoodsAI/Info.plist;
+				INFOPLIST_FILE = InventoryIQ/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Take Photos";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Record voice";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Choice Photos";
@@ -401,7 +396,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AA8071F62D7EF634007C6554 /* Build configuration list for PBXProject "GoodsAI" */ = {
+		AA8071F62D7EF634007C6554 /* Build configuration list for PBXProject "InventoryIQ" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AA8072112D7EF635007C6554 /* Debug */,
@@ -410,7 +405,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AA80720E2D7EF635007C6554 /* Build configuration list for PBXNativeTarget "GoodsAI" */ = {
+		AA80720E2D7EF635007C6554 /* Build configuration list for PBXNativeTarget "InventoryIQ" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AA80720F2D7EF635007C6554 /* Debug */,
