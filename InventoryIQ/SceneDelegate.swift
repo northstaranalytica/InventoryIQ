@@ -1,0 +1,102 @@
+//
+//  SceneDelegate.swift
+//  GoodsAI
+//
+//  Created by Emily on 2025/3/10.
+//
+
+import UIKit
+import IQKeyboardManagerSwift // Import IQKeyboardManager
+import RxSwift
+import SnapKit
+class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+
+    var window: UIWindow?
+
+
+    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
+        // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
+        // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
+//        guard let _ = (scene as? UIWindowScene) else { return }
+        
+        guard let windowScene = (scene as? UIWindowScene) else { return }
+        IQKeyboardManager.shared.isEnabled = true
+        IQKeyboardManager.shared.enableAutoToolbar = false
+        
+        _ = DatabaseManager.shared
+        
+        window = UIWindow(windowScene: windowScene)
+//        let homeVc = MainTabBarController()
+//        let homeNav = BaseNavigationController(rootViewController: homeVc)
+        window?.rootViewController = MainTabBarController()
+
+
+        
+        // Navigation bar background transparency issue after iOS15
+        if #available(iOS 15, *) {
+            UITableView.appearance().sectionHeaderTopPadding = 0
+            
+            let barApp = UINavigationBarAppearance()
+            barApp.configureWithOpaqueBackground()
+            barApp.backgroundColor = .white
+            barApp.shadowColor = .clear
+            UINavigationBar.appearance().standardAppearance = barApp
+            UINavigationBar.appearance().scrollEdgeAppearance = barApp
+        } else {
+            UINavigationBar.appearance().shadowImage = UIImage()
+            UINavigationBar.appearance().barTintColor = UIColor.white
+            UINavigationBar.appearance().backgroundColor = UIColor.white
+        }
+       
+        window?.makeKeyAndVisible()
+        
+        // Check if this is the first launch to show onboarding
+        checkAndShowOnboardingIfNeeded()
+    }
+    
+    private func checkAndShowOnboardingIfNeeded() {
+        // For testing: Uncomment to reset onboarding status and show it again on next launch
+        // OnboardingViewController.resetOnboardingStatus()
+        
+        // Only show onboarding if it hasn't been shown before
+        if !OnboardingViewController.hasOnboardingBeenShown() {
+            DispatchQueue.main.async {
+                let onboardingVC = OnboardingViewController()
+                onboardingVC.modalPresentationStyle = .fullScreen
+                self.window?.rootViewController?.present(onboardingVC, animated: true)
+            }
+        }
+    }
+
+    func sceneDidDisconnect(_ scene: UIScene) {
+        // Called as the scene is being released by the system.
+        // This occurs shortly after the scene enters the background, or when its session is discarded.
+        // Release any resources associated with this scene that can be re-created the next time the scene connects.
+        // The scene may re-connect later, as its session was not necessarily discarded (see `application:didDiscardSceneSessions` instead).
+    }
+
+    func sceneDidBecomeActive(_ scene: UIScene) {
+        // Called when the scene has moved from an inactive state to an active state.
+        // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
+    }
+
+    func sceneWillResignActive(_ scene: UIScene) {
+        // Called when the scene will move from an active state to an inactive state.
+        // This may occur due to temporary interruptions (ex. an incoming phone call).
+    }
+
+    func sceneWillEnterForeground(_ scene: UIScene) {
+        // Called as the scene transitions from the background to the foreground.
+        // Use this method to undo the changes made on entering the background.
+    }
+
+    func sceneDidEnterBackground(_ scene: UIScene) {
+        // Called as the scene transitions from the foreground to the background.
+        // Use this method to save data, release shared resources, and store enough scene-specific state information
+        // to restore the scene back to its current state.
+    }
+
+
+}
+
