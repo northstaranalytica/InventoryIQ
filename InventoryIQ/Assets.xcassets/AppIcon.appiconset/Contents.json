@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "AppIcon.png",
+      "filename" : "Copy of fetchly logo.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -13,7 +13,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "AppIcon-Dark.png",
+      "filename" : "Copy of fetchly logo 1.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
