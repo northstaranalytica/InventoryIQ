@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A481120E7885BAC228A8927E /* Pods_InventoryIQ.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A56A023573C25A65B41D6B8 /* Pods_InventoryIQ.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		6A56A023573C25A65B41D6B8 /* Pods_InventoryIQ.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_InventoryIQ.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA8071FB2D7EF634007C6554 /* InventoryIQ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InventoryIQ.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -39,6 +43,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A481120E7885BAC228A8927E /* Pods_InventoryIQ.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
