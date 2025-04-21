@@ -7,14 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A481120E7885BAC228A8927E /* Pods_InventoryIQ.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A56A023573C25A65B41D6B8 /* Pods_InventoryIQ.framework */; };
+		44DF46991F2DD9E9F7520D37 /* Pods_InventoryIQ.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 51B80371427B93E03C5B9338 /* Pods_InventoryIQ.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		6A56A023573C25A65B41D6B8 /* Pods_InventoryIQ.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_InventoryIQ.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		05C6281531BB8E6F84FDA849 /* Pods-InventoryIQ.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InventoryIQ.release.xcconfig"; path = "Target Support Files/Pods-InventoryIQ/Pods-InventoryIQ.release.xcconfig"; sourceTree = "<group>"; };
+		28A405032A9B124279EFEC39 /* Pods-InventoryIQ.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InventoryIQ.debug.xcconfig"; path = "Target Support Files/Pods-InventoryIQ/Pods-InventoryIQ.debug.xcconfig"; sourceTree = "<group>"; };
+		51B80371427B93E03C5B9338 /* Pods_InventoryIQ.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_InventoryIQ.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA8071FB2D7EF634007C6554 /* InventoryIQ.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = InventoryIQ.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		ED1B066292C5601BB0BEE3A2 /* Pods-InventoryIQ.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InventoryIQ.debug.xcconfig"; path = "Target Support Files/Pods-InventoryIQ/Pods-InventoryIQ.debug.xcconfig"; sourceTree = "<group>"; };
-		F9D0F2E89EACEBA4230BB37E /* Pods-InventoryIQ.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-InventoryIQ.release.xcconfig"; path = "Target Support Files/Pods-InventoryIQ/Pods-InventoryIQ.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -43,7 +43,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A481120E7885BAC228A8927E /* Pods_InventoryIQ.framework in Frameworks */,
+				44DF46991F2DD9E9F7520D37 /* Pods_InventoryIQ.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,8 +53,8 @@
 		159FBD1C08D75DEDD4735A6B /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				ED1B066292C5601BB0BEE3A2 /* Pods-InventoryIQ.debug.xcconfig */,
-				F9D0F2E89EACEBA4230BB37E /* Pods-InventoryIQ.release.xcconfig */,
+				28A405032A9B124279EFEC39 /* Pods-InventoryIQ.debug.xcconfig */,
+				05C6281531BB8E6F84FDA849 /* Pods-InventoryIQ.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -65,7 +65,7 @@
 				AA8071FD2D7EF634007C6554 /* InventoryIQ */,
 				AA8071FC2D7EF634007C6554 /* Products */,
 				159FBD1C08D75DEDD4735A6B /* Pods */,
-				AC5D66ECA136C28B1E5ABA56 /* Frameworks */,
+				DC6108ED8BFA719695E3592F /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -77,10 +77,10 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		AC5D66ECA136C28B1E5ABA56 /* Frameworks */ = {
+		DC6108ED8BFA719695E3592F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				6A56A023573C25A65B41D6B8 /* Pods_InventoryIQ.framework */,
+				51B80371427B93E03C5B9338 /* Pods_InventoryIQ.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -92,11 +92,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = AA80720E2D7EF635007C6554 /* Build configuration list for PBXNativeTarget "InventoryIQ" */;
 			buildPhases = (
-				8E023F83C6BF6EE58D24008D /* [CP] Check Pods Manifest.lock */,
+				3B1E69C8567027BC3F377916 /* [CP] Check Pods Manifest.lock */,
 				AA8071F72D7EF634007C6554 /* Sources */,
 				AA8071F82D7EF634007C6554 /* Frameworks */,
 				AA8071F92D7EF634007C6554 /* Resources */,
-				C8F061F29A5C188494FFBB2C /* [CP] Embed Pods Frameworks */,
+				B6BF92ABD9671FA6E929C6A3 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -155,7 +155,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		8E023F83C6BF6EE58D24008D /* [CP] Check Pods Manifest.lock */ = {
+		3B1E69C8567027BC3F377916 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -177,7 +177,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C8F061F29A5C188494FFBB2C /* [CP] Embed Pods Frameworks */ = {
+		B6BF92ABD9671FA6E929C6A3 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -209,7 +209,7 @@
 /* Begin XCBuildConfiguration section */
 		AA80720F2D7EF635007C6554 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = ED1B066292C5601BB0BEE3A2 /* Pods-InventoryIQ.debug.xcconfig */;
+			baseConfigurationReference = 28A405032A9B124279EFEC39 /* Pods-InventoryIQ.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -217,7 +217,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = Q35MB4F9UW;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = InventoryIQ/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Take Photos";
@@ -245,7 +245,7 @@
 		};
 		AA8072102D7EF635007C6554 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F9D0F2E89EACEBA4230BB37E /* Pods-InventoryIQ.release.xcconfig */;
+			baseConfigurationReference = 05C6281531BB8E6F84FDA849 /* Pods-InventoryIQ.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -253,7 +253,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = Q35MB4F9UW;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = InventoryIQ/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Take Photos";
