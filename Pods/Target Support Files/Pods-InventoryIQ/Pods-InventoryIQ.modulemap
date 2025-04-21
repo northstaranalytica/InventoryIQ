@@ -1,0 +1,6 @@
+framework module Pods_InventoryIQ {
+  umbrella header "Pods-InventoryIQ-umbrella.h"
+
+  export *
+  module * { export * }
+}
