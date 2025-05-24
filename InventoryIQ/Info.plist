@@ -47,5 +47,13 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Our app uses speech recognition to allow you to dictate text.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Our app needs access to your photo library so you can select photos.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Our app needs access to your camera to take photos.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Our app needs access to your microphone to record audio.</string>
 </dict>
 </plist>
