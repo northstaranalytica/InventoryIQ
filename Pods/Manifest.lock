@@ -55,7 +55,7 @@ PODS:
 
 DEPENDENCIES:
   - IQKeyboardManagerSwift
-  - MBProgressHUD
+  - MBProgressHUD (from `https://github.com/jdg/MBProgressHUD.git`, commit `18c442d57398cee5ef57f852df10fc5ff65f0763`)
   - RxCocoa
   - RxSwift
   - SnapKit
@@ -73,7 +73,6 @@ SPEC REPOS:
     - IQKeyboardToolbarManager
     - IQTextInputViewNotification
     - IQTextView
-    - MBProgressHUD
     - RxCocoa
     - RxRelay
     - RxSwift
@@ -81,6 +80,16 @@ SPEC REPOS:
     - SwiftCSV
     - Toast-Swift
     - ZLPhotoBrowser
+
+EXTERNAL SOURCES:
+  MBProgressHUD:
+    :commit: 18c442d57398cee5ef57f852df10fc5ff65f0763
+    :git: https://github.com/jdg/MBProgressHUD.git
+
+CHECKOUT OPTIONS:
+  MBProgressHUD:
+    :commit: 18c442d57398cee5ef57f852df10fc5ff65f0763
+    :git: https://github.com/jdg/MBProgressHUD.git
 
 SPEC CHECKSUMS:
   IQKeyboardCore: 28c8bf3bcd8ba5aa1570b318cbc4da94b861711e
@@ -91,7 +100,7 @@ SPEC CHECKSUMS:
   IQKeyboardToolbarManager: 6c693c8478d6327a7ef2107528d29698b3514dbb
   IQTextInputViewNotification: f5e954d8881fd9808b744e49e024cc0d4bcfe572
   IQTextView: ae13b4922f22e6f027f62c557d9f4f236b19d5c7
-  MBProgressHUD: 3ee5efcc380f6a79a7cc9b363dd669c5e1ae7406
+  MBProgressHUD: 1b0fb447e80a0fda94808180750e8b78a07b3cd2
   RxCocoa: ac16414696ae706516be3e1ab00fcce5bdc9be8a
   RxRelay: 6b0c930e5cef57d5fe2032571e5e65b78e3cbdb1
   RxSwift: 31649ace6aceeb422e16ff71c60804f9c3281ed9
@@ -100,6 +109,6 @@ SPEC CHECKSUMS:
   Toast-Swift: 7a03a532afe3a560d4044bc7c237e2864d295173
   ZLPhotoBrowser: 20f32e6429448cc1c008795a1b55472d5772939c
 
-PODFILE CHECKSUM: aeb34bb5e99dda129910c71e20c1490a3e4ba598
+PODFILE CHECKSUM: 8e385102142754c595387f0919f05a93567a388f
 
 COCOAPODS: 1.16.2

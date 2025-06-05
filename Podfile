@@ -12,7 +12,7 @@ target 'InventoryIQ' do
   pod 'RxCocoa'
   pod 'IQKeyboardManagerSwift'
   pod 'Toast-Swift'
-  pod 'MBProgressHUD'
+  pod 'MBProgressHUD',:git => 'https://github.com/jdg/MBProgressHUD.git', :commit => '18c442d57398cee5ef57f852df10fc5ff65f0763'
   pod 'ZLPhotoBrowser'
 end
 
