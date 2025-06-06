@@ -429,6 +429,18 @@ class DashboardVC: BaseViewController, UITableViewDelegate, UITableViewDataSourc
         actionSheet.addAction(choosePhotoAction)
         actionSheet.addAction(cancelAction)
         
+        // Configure popover for iPad to prevent crash
+        if let popover = actionSheet.popoverPresentationController {
+            if let addButton = navigationItem.rightBarButtonItems?.first {
+                popover.barButtonItem = addButton
+            } else {
+                // Fallback to center of view if button not found
+                popover.sourceView = self.view
+                popover.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
+                popover.permittedArrowDirections = []
+            }
+        }
+        
         present(actionSheet, animated: true)
     }
     

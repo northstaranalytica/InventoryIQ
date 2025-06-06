@@ -48,12 +48,12 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Our app uses speech recognition to allow you to dictate text.</string>
+	<string>InventoryIQ uses speech recognition to convert your voice into text when adding or editing inventory items. When you press and hold the microphone button in input fields, your speech will be converted to text for item names, prices, and quantities to make data entry faster and more convenient.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Our app needs access to your photo library so you can select photos.</string>
+	<string>InventoryIQ needs photo library access to let you select existing photos of inventory items. When you choose "Choose from Gallery" while adding a new item, you can select an existing photo to use as the item's image for identification and cataloging.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Our app needs access to your camera to take photos.</string>
+	<string>InventoryIQ uses camera access to take photos of inventory items for identification and cataloging purposes. When you tap "Take Photo" while adding a new item, the camera will open to capture an image that will be saved with your inventory record for easy identification and management.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Our app needs access to your microphone to record audio.</string>
+	<string>InventoryIQ uses microphone access for voice input when adding or editing inventory items. When you tap the microphone button in input fields, you can speak item names, prices, or quantities instead of typing them manually for faster data entry.</string>
 </dict>
 </plist>
